@@ -1,0 +1,113 @@
+.section{
+	display:inline-block;	
+	width: 49%;
+	height: 400px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+}
+/*공지 테이블*/
+table {
+    width: 100%;
+	height: 100%;
+    border-collapse: collapse;
+
+}
+.qna th:nth-child(1),.qna td:nth-child(1){
+    width: 22%;
+}
+th:nth-child(2),td:nth-child(2) {
+    width: 50%;
+    max-width: 0; 
+}
+
+.notice td:nth-child(3){
+    font-size: 17px;
+}
+
+.stats td , .stats th {
+    padding: 5px;
+}
+.stats th:nth-child(1),.stats td:nth-child(1){
+    width: 20%;
+}
+.stats th:nth-child(2),.stats td:nth-child(2){
+    width: 30%;
+}
+.stats th:nth-child(3),.stats td:nth-child(3){
+    width: 25%;
+}
+.stats th:nth-child(4),.stats td:nth-child(4){
+    width: 25%;
+}
+
+.stats tr:last-child{
+	border-top: 2px solid black;
+}
+
+thead > tr{
+	border-top: none !important;
+}
+
+td:last-child{
+    max-width: 0;
+    padding: 0px;
+    padding-right: 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.title-wrapper , .title-wrapper p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 87%;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.admin_title h4{
+	display: inline-block;
+    width: 49%;
+}
+
+th, td {
+    padding: 12px 8px; /* 셀 패딩 추가 */
+    text-align: center; /* 텍스트 중앙 정렬 */
+    border-bottom: 1px solid #ddd; /* 아래쪽 테두리 */
+}
+
+th {
+    background-color: #fcd11e; /* 헤더 배경색 */
+    color: #333; /* 헤더 텍스트 색상 */
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9; /* 짝수 행 배경색 */
+}
+
+tr:nth-child(odd) {
+    background-color: #ffffff; /* 홀수 행 배경색 */
+}
+
+tr:hover {
+    background-color: #f1f1f1; /* 행에 마우스오버 시 배경색 */
+}
+
+ td {
+    color: #555; /* 일반 텍스트 색상 */
+}
+
+.important-notice {
+    background-color: #ffe8a1; /* 중요 공지 배경색 */
+    font-weight: bold;
+}
+
+.us_profile{
+    width: 20px; /* 원하는 너비 */
+    height: 20px; /* 원하는 높이 */
+    border-radius: 50%; /* 원형으로 만들기 */
+    object-fit: cover; /* 이미지가 원형 내부에 잘 맞도록 */
+    margin-top: -5px;
+    margin-right: 1px;
+}

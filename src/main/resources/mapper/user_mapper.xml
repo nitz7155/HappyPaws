@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.happypaws.dao.UserDAO">
+
+	<!-- 모든 사용자 조회 -->
+    <select id="userSelectAll" resultType="com.happypaws.vo.UsersVO">
+         SELECT * FROM users WHERE us_is_del = 'N'
+
+    </select>
+    
+    <!-- 사용자 검색 -->
+    <select id="searchUsers" parameterType="map" resultType="com.happypaws.vo.UsersVO">
+        SELECT * FROM USERS
+        <where>
+            <if test="searchType != null and searchKeyword != null and searchKeyword != ''">
+                <choose>
+                    <when test="searchType == 'us_id'">
+                        AND us_id LIKE CONCAT('%', #{searchKeyword}, '%')
+                    </when>
+                    <when test="searchType == 'us_name'">
+                        AND us_name LIKE CONCAT('%', #{searchKeyword}, '%')
+                    </when>
+                    <when test="searchType == 'us_email'">
+                        AND us_email LIKE CONCAT('%', #{searchKeyword}, '%')
+                    </when>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+
+    <!--  사용자상세 조회 -->
+  <select id="user_detail" parameterType="String" resultType="com.happypaws.vo.UsersVO">
+        SELECT * FROM USERS WHERE US_ID = #{us_id}
+    </select>
+    
+     <!-- 사용자 삭제 -->
+<!--     <delete id="us_is_del" parameterType="String"> -->
+<!--         DELETE FROM USERS WHERE US_ID = #{us_id} -->
+<!--     </delete> -->
+   <update id="updateUserToDeleted" parameterType="String">
+    UPDATE users
+    SET us_is_del = 'Y'
+    WHERE us_id = #{us_id}
+</update>
+        
+    <!--사용자 정보 업데이트 -->
+    <update id="user_update">
+        UPDATE users SET
+            us_name = #{us_name},
+            us_nick = #{us_nick},
+            us_email = #{us_email},
+            us_address = #{us_address},
+              postcode = #{postcode},
+            us_profile = #{us_profile}
+            WHERE us_id = #{us_id}
+    </update>
+    
+      <!-- 마이페이지 사용자 정보 업데이트 -->
+    <update id="updateUserInfo">
+        UPDATE USERS SET
+            us_name = #{us_name},
+            us_nick = #{us_nick},
+            us_email = #{us_email},
+            us_phone = #{us_phone},
+            us_address = #{us_address},
+              postcode = #{postcode},
+            us_profile = #{us_profile}
+        WHERE us_id = #{us_id}
+    </update>
+    
+    
+    <!-- 로그인용 사용자 조회 -->
+      <select id="getUser" resultType="com.happypaws.vo.UsersVO">
+        SELECT * FROM USERS WHERE US_ID=#{us_id} AND US_PASSWORD=#{us_password}
+    </select>
+    
+    
+    
+    <select id="myPage" parameterType="String" resultType="com.happypaws.vo.UsersVO">
+        SELECT * FROM users WHERE us_id = #{us_id}
+    </select>
+    
+     <!-- 사용자 ID로 조회 -->
+    <select id="getUserById" parameterType="string" resultType="com.happypaws.vo.UsersVO">
+        SELECT * FROM users WHERE us_id = #{us_id}
+    </select>
+    <!-- 비밀번호 업데이트 -->
+    <update id="updatePassword" parameterType="com.happypaws.vo.UsersVO">
+        UPDATE users SET us_password = #{us_password} WHERE us_id = #{us_id}
+    </update>
+    
+<!-- 사용자 ID로 전체 게시물 조회 -->
+    <select id="findPostsByUserId" parameterType="string" resultType="com.happypaws.vo.MyPostVO">
+        SELECT post_id, title, source_table, created_date
+        FROM (
+            SELECT n_seq AS post_id, n_title AS title, '공지사항' AS source_table, n_date AS created_date
+            FROM notice WHERE n_id = #{usId}
+            UNION ALL
+            SELECT cmty_seq AS post_id, cmty_title AS title, '커뮤니티' AS source_table, cmty_date AS created_date
+            FROM community WHERE cmty_id = #{usId}
+            UNION ALL
+            SELECT qna_seq AS post_id, qna_title AS title, 'QNA' AS source_table, qna_date AS created_date
+            FROM qna WHERE qna_id = #{usId}
+            UNION ALL
+            
+            SELECT lp_seq AS post_id, lp_title AS title, '아이를 찾아주세요' AS source_table, lp_date AS created_date
+            FROM lostpet WHERE lp_id = #{usId}
+            UNION ALL
+             SELECT fp_seq AS post_id, fp_title AS title, '아이를 발견했어요' AS source_table, fp_date AS created_date
+            FROM findpet WHERE fp_id = #{usId}
+            UNION ALL
+             SELECT nf_seq AS post_id, nf_title AS title, '새로운 가족을 찾아요' AS source_table, nf_date AS created_date
+            FROM newfamily WHERE nf_id = #{usId}
+        ) AS posts
+        ORDER BY created_date DESC
+    </select>
+    
+    <!-- 사용자 ID와 검색 조건으로 게시물 조회 -->
+    <select id="searchPostsByUserId" parameterType="map" resultType="com.happypaws.vo.MyPostVO">
+        SELECT post_id, title, source_table, created_date
+        FROM (
+            SELECT n_seq AS post_id, n_title AS title, '공지사항' AS source_table, n_date AS created_date
+            FROM notice WHERE n_id = #{us_id}
+            UNION ALL
+            SELECT cmty_seq AS post_id, cmty_title AS title, '커뮤니티' AS source_table, cmty_date AS created_date
+            FROM community WHERE cmty_id = #{us_id}
+            UNION ALL
+            SELECT qna_seq AS post_id, qna_title AS title, 'QNA' AS source_table, qna_date AS created_date
+            FROM qna WHERE qna_id = #{us_id}
+            UNION ALL
+             SELECT lp_seq AS post_id, lp_title AS title, '아이를 찾아주세요' AS source_table, lp_date AS created_date
+            FROM lostpet WHERE lp_id = #{us_id}
+            UNION ALL
+             SELECT fp_seq AS post_id, fp_title AS title, '아이를 발견했어요' AS source_table, fp_date AS created_date
+            FROM findpet WHERE fp_id = #{us_id}
+            UNION ALL
+             SELECT nf_seq AS post_id, nf_title AS title, '새로운 가족을 찾아요' AS source_table, nf_date AS created_date
+            FROM newfamily WHERE nf_id = #{us_id}
+        ) AS posts
+        ORDER BY created_date DESC
+        
+        <choose>
+            <when test="searchField == 'title'">
+                title LIKE #{searchQuery}
+            </when>
+            <when test="searchField == 'source_table'">
+                source_table LIKE #{searchQuery}
+            </when>
+            <otherwise>
+                1=1
+            </otherwise>
+        </choose>
+        ORDER BY created_date DESC
+    </select>
+    
+   <!-- 단일 게시물 조회 -->
+    <select id="findPostById" parameterType="int" resultType="com.happypaws.vo.MyPostVO">
+        SELECT post_id, title, source_table, created_date
+        FROM (
+            SELECT n_seq AS post_id, n_title AS title, '공지사항' AS source_table, n_date AS created_date
+            FROM notice WHERE n_seq = #{postId}
+            UNION ALL
+            SELECT cmty_seq AS post_id, cmty_title AS title, '커뮤니티' AS source_table, cmty_date AS created_date
+            FROM community WHERE cmty_seq = #{postId}
+            UNION ALL
+            SELECT qna_seq AS post_id, qna_title AS title, 'QNA' AS source_table, qna_date AS created_date
+            FROM qna WHERE qna_seq = #{postId}
+            UNION ALL
+             SELECT lp_seq AS post_id, lp_title AS title, '아이를 찾아주세요' AS source_table, lp_date AS created_date
+            FROM lostpet WHERE lp_id = #{postId}
+            UNION ALL
+             SELECT fp_seq AS post_id, fp_title AS title, '아이를 발견했어요' AS source_table, fp_date AS created_date
+            FROM findpet WHERE fp_id = #{postId}
+            UNION ALL
+             SELECT nf_seq AS post_id, nf_title AS title, '새로운 가족을 찾아요' AS source_table, nf_date AS created_date
+            FROM newfamily WHERE nf_id = #{postId}
+        ) AS posts
+        ORDER BY created_date DESC
+    </select>
+</mapper>

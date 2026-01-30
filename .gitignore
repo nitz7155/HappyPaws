@@ -1,0 +1,15 @@
+# STS/Eclipse
+.metadata/
+.settings/
+.project
+.classpath
+Servers/
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# Build results
+target/
+build/

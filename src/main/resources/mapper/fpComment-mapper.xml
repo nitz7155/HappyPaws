@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FpCommentDAO">
+    <insert id="insertFpComment">
+        INSERT INTO fpComment(fp_seq, fpc_id, fpc_code, fpc_content, fpc_date, fpc_login)
+        VALUES(#{fp_seq}, #{fpc_id}, #{fpc_code}, #{fpc_content}, #{fpc_date}, #{fpc_login})
+    </insert>
+
+    <update id="updateFpComment">
+        UPDATE fpComment 
+        SET fpc_content = #{fpc_content}
+        WHERE fp_seq = #{fp_seq} AND fpc_seq = #{fpc_seq}
+    </update>
+
+    <delete id="deleteFpComment">
+        DELETE FROM fpComment 
+        WHERE fp_seq = #{fp_seq} AND fpc_seq = #{fpc_seq}
+    </delete>
+
+    <select id="getFpCommentList" resultType="fpComment">
+        SELECT *
+		FROM fpComment
+		LEFT JOIN users ON fpComment.fpc_id = users.us_id
+        WHERE fp_seq = #{fp_seq}
+        ORDER BY fpc_seq DESC
+    </select>
+
+	<select id="verifyFpcPassword" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM fpComment
+        WHERE fpc_seq = #{fpcSeq}
+        AND fpc_code = #{enteredPassword}
+    </select>
+
+</mapper>

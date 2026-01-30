@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="NewFamilyDAO">
+
+
+	<insert id="insertNewFamily">
+		INSERT INTO newfamily (nf_id, nf_title, nf_ph,
+		nf_img,
+		nf_place, nf_age, nf_gender,
+		nf_category, nf_breed, nf_content, nf_date,
+		nf_ok,
+		nf_del)
+		VALUES (#{nf_id}, #{nf_title}, #{nf_ph}, #{nf_img},
+		#{nf_place},
+		#{nf_age},
+		#{nf_gender},
+		#{nf_category}, #{nf_breed}, #{nf_content},
+		#{nf_date},
+		#{nf_ok},
+		#{nf_del})
+	</insert>
+
+
+	<update id="updateNewFamily">
+		UPDATE newfamily
+		SET nf_title = #{nf_title},
+		nf_ph =
+		#{nf_ph},
+		nf_img =
+		#{nf_img},
+		nf_place = #{nf_place},
+		nf_age = #{nf_age},
+		nf_gender =
+		#{nf_gender},
+		nf_category =
+		#{nf_category},
+		nf_breed = #{nf_breed},
+		nf_content = #{nf_content},
+		nf_ok = #{nf_ok},
+		nf_del = #{nf_del}
+		WHERE
+		nf_seq = #{nf_seq}
+	</update>
+
+
+	<update id="deleteNewFamily">
+		UPDATE newfamily
+		SET nf_del = 'Y'
+		WHERE nf_seq =
+		#{nf_seq}
+	</update>
+
+	<select id="getNewFamily" resultType="newFamily">
+		SELECT *
+		FROM newfamily, users
+		WHERE nf_seq = #{nf_seq} and nf_id = us_id
+	</select>
+
+	<select id="getNewFamilyList" resultType="newFamily">
+		SELECT *
+		FROM newfamily
+		WHERE nf_del = 'N'
+		<if test="category != null and category != ''">
+			AND nf_category = #{category}
+		</if>
+		<if test="searchCondition == 'TITLE' ">
+			AND nf_title LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'CONTENT' ">
+			AND nf_content LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'ID' ">
+			AND nf_id LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'TITLE,CONTENT' ">
+			AND (nf_title LIKE CONCAT('%', #{searchKeyword}, '%') OR
+			nf_content LIKE CONCAT('%', #{searchKeyword}, '%'))
+		</if>
+		ORDER BY nf_seq DESC
+		LIMIT #{listcnt} OFFSET
+		#{start}
+	</select>
+	
+	<select id="getNewFamilyListIndex" resultType="newFamily">
+		SELECT *
+		FROM newfamily
+		WHERE nf_del = 'N'
+		ORDER BY nf_seq DESC
+		LIMIT 4
+	</select>
+
+	<select id="countNewFamily" resultType="int">
+		SELECT COUNT(*) FROM newfamily WHERE nf_del = 'N'
+		<if test="category != null and category != ''">
+			AND nf_category = #{category}
+		</if>
+		<if test="searchCondition == 'TITLE' ">
+			AND nf_title LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'CONTENT' ">
+			AND nf_content LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'ID' ">
+			AND nf_id LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'TITLE,CONTENT' ">
+			AND (nf_title LIKE CONCAT('%', #{searchKeyword}, '%') OR
+			nf_content LIKE CONCAT('%', #{searchKeyword}, '%'))
+		</if>
+	</select>
+
+	<select id="getCurrentImage" parameterType="int"
+		resultType="string">
+		SELECT nf_img FROM newfamily WHERE nf_seq = #{nf_seq}
+	</select>
+
+	<update id="updateNewFamilyCnt">
+		UPDATE newfamily SET nf_cnt = IFNULL(#{nf_cnt}, 0) +
+		1
+		WHERE nf_seq = #{nf_seq}
+	</update>
+
+	<select id="countNfComment" resultType="int">
+		SELECT COUNT(*) FROM
+		nfComment, users WHERE nf_seq = #{nf_seq} and nfc_id = us_id
+	</select>
+</mapper>

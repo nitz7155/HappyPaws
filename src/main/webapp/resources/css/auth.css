@@ -1,0 +1,293 @@
+/* common */
+body {
+	display: flex;
+}
+
+main {
+	text-align: center;
+	background: white;
+	border-radius: 10px;
+	width: 500px;
+	margin-top: 50px;
+}
+
+main h3 {
+	font-weight: bold;
+	margin-bottom: 15px;
+}
+
+.auth-form {
+	width: 500px;
+	margin: auto;
+	padding: 50px 20px;
+	border: 2px solid #ccc;
+	border-radius: 10px;
+}
+
+.auth-form form {
+	width: 400px;
+	margin: auto;
+}
+
+.auth-form form > input {
+	width: 100%;
+}
+
+.auth-form input:not([type=submit]):not([type=button]) {
+	outline: #ddd auto 1px;
+	padding: 10px;
+	border: none;
+	border-radius: 5px;
+}
+
+.auth-form input:not([type=submit]):not([type=button]):focus {
+	outline: #fcd11e auto 1px;
+}
+
+.auth-form div {
+	display: flex;
+	width: 100%;
+	margin: 10px 0;
+}
+
+.auth-form div > input:not([type=button]) {
+	flex: 1;
+	width: 0;
+	margin: 0;
+}
+
+.auth-form input[type=button] {
+	margin-left: 10px;
+}
+
+.auth-form input[type=submit] {
+	width: 100%;
+	margin-top: 20px;
+}
+
+.auth-form input[type="button"],
+.auth-form input[type="submit"] {
+	background-color: #fe8;
+	color: #3c1e1e;
+	border: none;
+	padding: 10px;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.auth-form input[type=button]:focus,
+.auth-form input[type=button]:hover,
+.auth-form input[type=submit]:focus,
+.auth-form input[type=submit]:hover {
+	outline: none;
+	background-color: #fcd11e;
+}
+
+.error-highlight {
+	outline: red auto 1px !important;
+}
+
+.error-highlight::placeholder {
+	color: red;
+}
+
+.error-message {
+	display: none;
+	margin: 0;
+}
+
+div:has(.error-highlight)+.error-message {
+	display: block;
+	color: red;
+	font-size: 12px;
+}
+
+#us_phone_auth_div {
+	position: relative;
+}
+
+.timer {
+    position: absolute;
+    top: 50%;
+    right: 130px;
+    transform: translateY(-50%);
+    background: transparent;
+    padding: 0 5px;
+    font-size: 12px;
+    color: red;
+}
+
+/* login */
+main > div {
+	width: 300px;
+	margin: auto;
+}
+
+form[action="/auth/login"] {
+	width: 300px;
+}
+
+.sns-login {
+	margin-bottom: 30px;
+}
+
+.sns-login a {
+	display: block;
+	margin: 10px 0;
+	text-decoration: none;
+	color: white;
+	font-weight: bold;
+	border-radius: 5px;
+}
+
+.sns-login a > img {
+	width: 100%;
+	height: 45px;
+}
+
+.login-error-message {
+	color: red;
+	margin-top: 10px;
+}
+
+.auth-links {
+	margin-top: 20px;
+}
+
+.auth-links a {
+	margin: 5px 0;
+	color: #333;
+	text-decoration: none;
+}
+
+.auth-links a:hover {
+	text-decoration: underline;
+}
+
+.coarse {
+	display: none;
+}
+
+/* find password */
+#user_authentication,
+#password_change {
+	display: block;
+}
+
+#user_authentication > input,
+#password_change > input {
+	width: 100%;
+	margin: 10px auto;
+}
+
+#user_authentication > div {
+	display: flex;
+	margin: 10px auto;
+}
+
+#user_authentication > div > input[type=text] {
+	flex: 1;
+}
+
+
+.find-id-results {
+	margin-top: 30px;
+	padding: 20px;
+	border: 1px solid #ddd;
+	border-radius: 10px;
+}
+
+.find-id-results h4 {
+	font-size: 20px;
+	margin-bottom: 15px;
+}
+
+.find-id-results ul {
+	list-style: none;
+	padding: 0;
+}
+
+.find-id-item {
+	padding: 10px;
+}
+
+.find-id-value {
+	font-weight: bold;
+	color: #333;
+}
+
+.find-id-results a {
+	display: block;
+	color: #3c1e1e;
+	text-decoration-line: none;
+	background: #fe8;
+	padding: 10px;
+	border-radius: 10px;
+	margin-top: 30px;
+}
+
+.find-id-results a:hover {
+	background-color: #fcd11e;
+}
+
+/* 모바일 반응형 */
+@media (pointer: coarse) {
+	main {
+		width: 100%;
+	}
+
+	main > div {
+		width: 80%;
+		max-width: 300px;
+	}
+
+	.auth-form {
+		width: 80%;
+		padding: 0;
+		margin: auto;
+		border: none;
+	}
+
+	.auth-form > form {
+		width: 100%;
+		max-width: 400px;
+	}
+
+	/* login */
+	.coarse {
+		display: block;
+	}
+
+	.fine {
+		display: none;
+	}
+
+	.sns-login-icons {
+		width: fit-content;
+		margin: auto;
+		display: flex;
+		gap: 20px;
+	}
+
+	.sns-login-icons a {
+		display: inline;
+	}
+
+	.sns-login-icons a > img {
+		width: auto;
+	}
+}
+
+/* 떨림 애니메이션 정의 */
+@keyframes shake {
+	0% { transform: translateX(0); }
+	25% { transform: translateX(-5px); }
+	50% { transform: translateX(5px); }
+	75% { transform: translateX(-5px); }
+	100% { transform: translateX(0); }
+}
+
+/* 떨림 효과 클래스 */
+.shake {
+	animation: shake 0.3s ease-in-out;
+}

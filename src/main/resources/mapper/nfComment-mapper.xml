@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="NfCommentDAO">
+
+	<insert id="insertNfComment">
+		INSERT INTO nfcomment (nf_seq, nfc_id, nfc_content, nfc_date)
+		VALUES (#{nf_seq}, #{nfc_id}, #{nfc_content}, #{nfc_date})
+	</insert>
+
+	<update id="updateNfComment">
+		UPDATE nfcomment
+		SET nfc_content = #{nfc_content}
+		WHERE nf_seq = #{nf_seq} AND nfc_seq = #{nfc_seq}
+	</update>
+
+	<delete id="deleteNfComment">
+		DELETE FROM nfcomment
+		WHERE nf_seq = #{nf_seq} AND nfc_seq = #{nfc_seq}
+	</delete>
+
+
+	<select id="getNfCommentList" resultType="nfComment">
+		SELECT *
+		FROM nfcomment, users
+		WHERE nf_seq = #{nf_seq} and nfc_id = us_id
+		ORDER BY nfc_seq DESC
+	</select>
+
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="LpCommentDAO">
+	<insert id="insertLpComment">
+		INSERT INTO lpComment(lp_seq, lpc_id, lpc_content, lpc_date)
+		VALUES(#{lp_seq}, #{lpc_id}, #{lpc_content}, #{lpc_date})
+	</insert>
+
+	<update id="updateLpComment">
+		UPDATE lpComment 
+		SET lpc_content = #{lpc_content}
+		WHERE lp_seq = #{lp_seq} AND lpc_seq = #{lpc_seq}
+	</update>
+
+	<delete id="deleteLpComment">
+		DELETE FROM lpComment 
+		WHERE lp_seq = #{lp_seq} AND lpc_seq = #{lpc_seq}
+	</delete>
+
+	<select id="getLpCommentList" resultType="LpComment">
+		SELECT * 
+		FROM lpComment, users
+		WHERE lp_seq = #{lp_seq} and lpc_id = us_id
+		ORDER BY lpc_seq DESC
+	</select>
+
+</mapper>

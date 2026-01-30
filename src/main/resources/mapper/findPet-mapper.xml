@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FindPetDAO">
+
+    <!-- Insert findPet -->
+    <insert id="insertFindPet">
+        INSERT INTO findpet(
+            fp_id, fp_code, fp_title, fp_ph, fp_img, fp_place, fp_time,
+            fp_category, fp_breed, fp_content, fp_date, fp_login, fp_ok, fp_del
+        )
+        VALUES(
+            #{fp_id}, #{fp_code}, #{fp_title}, #{fp_ph}, #{fp_img}, #{fp_place}, #{fp_time},
+            #{fp_category}, #{fp_breed}, #{fp_content}, #{fp_date}, #{fp_login}, #{fp_ok}, #{fp_del}
+        )
+    </insert>
+
+    <update id="updateFindPet">
+        UPDATE findpet
+        SET
+            fp_title = #{fp_title},
+            fp_ph = #{fp_ph},
+            fp_img = #{fp_img},
+            fp_place = #{fp_place},
+            fp_time = #{fp_time},
+            fp_category = #{fp_category},
+            fp_breed = #{fp_breed},
+            fp_content = #{fp_content},
+            fp_ok = #{fp_ok}
+        WHERE fp_seq = #{fp_seq}
+    </update>
+
+    <update id="deleteFindPet">
+        UPDATE findpet
+        SET fp_del = 'Y'
+        WHERE fp_seq = #{fp_seq}
+    </update>
+
+    <select id="getFindPet" resultType="findPet">
+    	SELECT * 
+    	FROM findpet
+    	LEFT JOIN users ON findpet.fp_id = users.us_id
+    	WHERE fp_seq = #{fp_seq};
+	</select>
+
+    <select id="getFindPetList" resultType="findPet">
+        SELECT * 
+        FROM findpet
+        WHERE fp_del = 'N'
+             
+        <if test="category != null and category != ''">
+            AND fp_category = #{category}
+        </if>
+        
+        <if test="searchCondition == 'TITLE'">
+            AND fp_title LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        
+        <if test="searchCondition == 'CONTENT'">
+            AND fp_content LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        
+        <if test="searchCondition == 'ID'">
+            AND fp_id LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        
+        <if test="searchCondition == 'TITLE,CONTENT'">
+            AND (fp_title LIKE CONCAT('%', #{searchKeyword}, '%') OR
+                 fp_content LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>      
+        ORDER BY fp_seq DESC
+        LIMIT #{listcnt} OFFSET #{start}
+    </select>
+
+    <select id="countFindPet" resultType="int">
+        SELECT COUNT(*)
+        FROM findpet
+        WHERE fp_del = 'N'
+        
+        <if test="category != null and category != ''">
+            AND fp_category = #{category}
+        </if>
+        
+        <if test="searchCondition == 'TITLE'">
+            AND fp_title LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        
+        <if test="searchCondition == 'CONTENT'">
+            AND fp_content LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        
+        <if test="searchCondition == 'ID'">
+            AND fp_id LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        
+        <if test="searchCondition == 'TITLE,CONTENT'">
+            AND (fp_title LIKE CONCAT('%', #{searchKeyword}, '%') OR
+                 fp_content LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+    </select>
+    
+    <select id="getCurrentImage" parameterType="int" resultType="string">
+        SELECT fp_img FROM findpet WHERE fp_seq = #{fp_seq}
+    </select>
+
+	
+    <update id="updateFindPetCnt">
+        UPDATE findpet
+        SET fp_cnt = IFNULL(#{fp_cnt}, 0) + 1
+        WHERE fp_seq = #{fp_seq}
+    </update>
+
+    <select id="countFpComment" resultType="int">
+        SELECT COUNT(*) FROM fpComment WHERE fp_seq = #{fp_seq}
+    </select>
+
+	<select id="verifyPassword" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM findpet
+        WHERE fp_seq = #{fpSeq}
+        AND fp_code = #{enteredPassword}
+    </select>
+    
+</mapper>

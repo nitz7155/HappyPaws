@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<typeAlias type="com.happypaws.vo.UsersVO" alias="users"></typeAlias>
+		<typeAlias type="com.happypaws.vo.ProductsVO" alias="products"></typeAlias>
+		<typeAlias type="com.happypaws.vo.ProductOptionVO" alias="productOptions"></typeAlias>
+		<typeAlias type="com.happypaws.vo.FindPetVO" alias="findPet"/>
+    	<typeAlias type="com.happypaws.vo.LostPetVO" alias="lostPet"/>
+    	<typeAlias type="com.happypaws.vo.NewFamilyVO" alias="newFamily"/>
+		<typeAlias type="com.happypaws.vo.FpCommentVO" alias="fpComment"/>
+    	<typeAlias type="com.happypaws.vo.LpCommentVO" alias="lpComment"/>
+    	<typeAlias type="com.happypaws.vo.NfCommentVO" alias="nfComment"/>
+		<typeAlias type="com.happypaws.vo.ProductVO" alias="product"></typeAlias>
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="mapper/auth-mapper.xml" />
+
+		<mapper resource="mapper/board-mapping.xml" />
+		<mapper resource="mapper/qna-mapping.xml"/>
+		<mapper resource="mapper/cmty-mapping.xml"/>
+
+		<mapper resource="mapper/user_mapper.xml" />
+		<mapper resource="mapper/ad_mapper.xml" />
+
+		<mapper resource="mapper/AdminProductMapper.xml" />
+
+    	<mapper resource="mapper/findPet-mapper.xml"/>
+    	<mapper resource="mapper/lostPet-mapper.xml"/>
+    	<mapper resource="mapper/newFamily-mapper.xml"/>
+    	<mapper resource="mapper/fpComment-mapper.xml"/>
+    	<mapper resource="mapper/lpComment-mapper.xml"/>
+    	<mapper resource="mapper/nfComment-mapper.xml"/>
+
+		<mapper resource="mapper/product-mapper.xml"/>
+	</mappers>
+</configuration>

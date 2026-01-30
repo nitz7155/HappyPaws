@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="LostPetDAO">
+
+
+	<insert id="insertLostPet">
+		INSERT INTO lostpet(lp_id, lp_title, lp_ph,
+		lp_img,
+		lp_place, lp_time, lp_category, lp_breed, lp_reward,
+		lp_content,
+		lp_date, lp_ok, lp_del)
+		VALUES(#{lp_id},
+		#{lp_title}, #{lp_ph},
+		#{lp_img},
+		#{lp_place}, #{lp_time},
+		#{lp_category}, #{lp_breed},
+		#{lp_reward},
+		#{lp_content}, #{lp_date},
+		#{lp_ok}, #{lp_del})
+	</insert>
+
+	<update id="updateLostPet">
+		UPDATE lostpet
+		SET
+		lp_title = #{lp_title},
+		lp_ph =
+		#{lp_ph},
+		lp_img = #{lp_img},
+		lp_place = #{lp_place},
+		lp_time =
+		#{lp_time},
+		lp_category = #{lp_category},
+		lp_breed = #{lp_breed},
+		lp_reward = #{lp_reward},
+		lp_content = #{lp_content},
+		lp_ok = #{lp_ok}
+		WHERE lp_seq = #{lp_seq}
+	</update>
+
+
+	<update id="deleteLostPet">
+		UPDATE lostpet
+		SET lp_del = 'Y'
+		WHERE lp_seq =
+		#{lp_seq}
+	</update>
+
+	<select id="getLostPet" resultType="lostPet">
+		SELECT * 
+		FROM lostpet, users
+		WHERE lp_seq = #{lp_seq} and lp_id = us_id
+	</select>
+
+	<select id="getLostPetList" resultType="lostPet">
+		SELECT * 
+		FROM lostpet
+		WHERE lp_del='N'
+		<if test="category != null and category != ''">
+			AND lp_category = #{category}
+		</if>
+		<if test="searchCondition == 'TITLE' ">
+			AND lp_title LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'CONTENT' ">
+			AND lp_content LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'ID' ">
+			AND lp_id LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'TITLE,CONTENT' ">
+			AND (lp_title LIKE CONCAT('%', #{searchKeyword}, '%') OR
+			lp_content LIKE
+			CONCAT('%', #{searchKeyword}, '%'))
+		</if>
+		ORDER BY lp_seq DESC
+		LIMIT #{listcnt} OFFSET #{start}
+	</select>
+	
+	<select id="getLostPetListIndex" resultType="lostPet">
+		SELECT * 
+		FROM lostpet
+		WHERE lp_del='N'
+		ORDER BY lp_seq DESC
+		LIMIT 4
+	</select>
+
+	<select id="countLostPet" resultType="int">
+		SELECT COUNT(*) FROM lostpet WHERE lp_del='N'
+		<if test="category != null and category != ''">
+			AND lp_category = #{category}
+		</if>
+		<if test="searchCondition == 'TITLE' ">
+			AND lp_title LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'CONTENT' ">
+			AND lp_content LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'ID' ">
+			AND lp_id LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'TITLE,CONTENT' ">
+			AND (lp_title LIKE CONCAT('%', #{searchKeyword}, '%') OR
+			lp_content LIKE
+			CONCAT('%', #{searchKeyword}, '%'))
+		</if>
+	</select>
+
+	<select id="countLostPetAdmin" resultType="int">
+		SELECT COUNT(*) FROM lostpet WHERE 1=1
+		<if test="category != null and category != ''">
+			AND lp_category = #{category}
+		</if>
+		<if test="searchCondition == 'TITLE' ">
+			AND lp_title LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'CONTENT' ">
+			AND lp_content LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'ID' ">
+			AND lp_id LIKE CONCAT('%', #{searchKeyword}, '%')
+		</if>
+		<if test="searchCondition == 'TITLE,CONTENT' ">
+			AND (lp_title LIKE CONCAT('%', #{searchKeyword}, '%') OR
+			lp_content LIKE
+			CONCAT('%', #{searchKeyword}, '%'))
+		</if>
+	</select>
+
+	<select id="getCurrentImage" parameterType="int"
+		resultType="string">
+		SELECT lp_img FROM lostpet WHERE lp_seq = #{lp_seq}
+	</select>
+
+	<update id="updateLostPetCnt">
+		UPDATE lostpet SET lp_cnt = IFNULL(#{lp_cnt}, 0) + 1
+		WHERE lp_seq = #{lp_seq}
+	</update>
+	
+	<select id="countLpComment" resultType="int">
+		SELECT COUNT(*) FROM
+		lpComment WHERE lp_seq = #{lp_seq}
+	</select>
+</mapper>

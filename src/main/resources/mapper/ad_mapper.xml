@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="AdDAO">
+
+	 <!-- 관리자 아이디 조회 -->
+    <select id="getAdminById" parameterType="string" resultType="com.happypaws.vo.UsersVO">
+        SELECT * FROM users WHERE us_id = #{us_id}
+    </select>
+    
+    <!-- 관리자 비밀번호 조회 -->
+    <select id="getPasswordById" parameterType="string" resultType="string">
+        SELECT us_password FROM users WHERE us_id = #{us_id}
+    </select>
+
+    <!-- 비밀번호 업데이트 -->
+    <update id="updatePassword" parameterType="map">
+        UPDATE users SET us_password = #{us_password} WHERE us_id = #{us_id}
+    </update>
+
+</mapper>

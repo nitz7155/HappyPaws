@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="AuthDAO">
+	<select id="login" resultType="users">
+		SELECT * FROM users WHERE us_id=#{us_id} AND us_sns=#{us_sns}
+	</select>
+
+	<insert id="snsJoin">
+		INSERT INTO users (us_id, us_sns, us_password, us_name, us_nick, us_email, us_phone, us_profile)
+		VALUES(#{us_id}, #{us_sns}, #{us_password}, #{us_name}, #{us_nick}, #{us_email}, #{us_phone}, #{us_profile})
+	</insert>
+
+	<select id="checkId" resultType="int">
+		SELECT COUNT(*) FROM users WHERE us_id=#{us_id}
+	</select>
+
+	<select id="checkNick" resultType="int">
+		SELECT COUNT(*) FROM users WHERE us_nick=#{us_nick}
+	</select>
+
+	<insert id="join">
+		INSERT INTO users (us_id, us_password, us_name, us_nick, us_email, us_phone, us_address)
+		VALUES(#{us_id}, #{us_password}, #{us_name}, #{us_nick}, #{us_email}, #{us_phone}, #{us_address})
+	</insert>
+	
+	<select id="findId" resultType="string">
+		SELECT us_id FROM users WHERE us_name=#{us_name} AND us_phone=#{us_phone} AND us_sns='default' AND us_is_del='N'
+	</select>
+	
+	<select id="checkUser" resultType="int">
+		SELECT COUNT(*) FROM users WHERE us_id=#{us_id} AND us_name=#{us_name} AND us_phone=#{us_phone} AND us_sns='default' AND us_is_del='N'
+	</select>
+	
+	<update id="findPw">
+		UPDATE users
+		SET us_password=#{us_password}
+		WHERE us_id=#{us_id} AND us_name=#{us_name} AND us_phone=#{us_phone} AND us_sns='default' AND us_is_del='N'
+	</update>
+
+<!-- 	<select id="selUsers" resultType="users"> -->
+<!-- 	<![CDATA[ -->
+<!-- 		SELECT * FROM users WHERE age < 50 -->
+<!-- 	]]> -->
+<!-- 	</select> -->
+</mapper>

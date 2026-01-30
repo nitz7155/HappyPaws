@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="QnaDAO">
+
+	<!-- QNA 목록보기 -->
+	<select id="qna_list" resultType="com.happypaws.vo.QnaVO">
+		SELECT QNA.* , (SELECT COUNT(*) 
+         FROM qna_comment 
+         WHERE qna_comment.qna_seq = QNA.qna_seq) AS comment_count,
+         users.us_profile,
+    	 users.us_nick
+		FROM QNA LEFT JOIN USERS ON QNA.qna_ID = USERS.US_ID 
+		WHERE 1=1 AND QNA_DEL = 'N' 
+		<if test="searchCondition == 'TITLE' "> AND QNA_TITLE LIKE CONCAT('%',#{searchKeyword},'%') </if>
+		<if test="searchCondition == 'CONTENT' "> AND QNA_CONTENT LIKE CONCAT('%',#{searchKeyword},'%') </if>
+		ORDER BY QNA_SEQ DESC
+		LIMIT #{listcnt} OFFSET #{start}
+	</select>
+	
+	<!--  QNA 글 갯수 -->
+	<select id="countQna" resultType="int">
+		SELECT COUNT(*) FROM QNA WHERE 1=1 AND QNA_DEL = 'N'
+		<if test="searchCondition == 'TITLE' "> AND QNA_TITLE LIKE CONCAT('%',#{searchKeyword},'%') </if>
+		<if test="searchCondition == 'CONTENT' "> AND QNA_CONTENT LIKE CONCAT('%',#{searchKeyword},'%') </if>
+	</select>
+	
+	<!--QNA 상세보기 -->
+	<select id="qna_view" resultType="com.happypaws.vo.QnaVO">
+		SELECT QNA.* , USERS.US_PROFILE, USERS.US_NICK 
+		FROM QNA , USERS
+		WHERE QNA_SEQ= #{qna_seq} AND QNA_DEL = 'N'  AND US_ID = QNA_ID;
+	</select>
+	
+	<!-- QNA 카운트 -->
+	<update id="qna_count">
+		UPDATE QNA SET QNA_COUNT = IFNULL(#{qna_count}, 0)+1 WHERE QNA_SEQ = #{qna_seq}
+	</update>
+	
+	<!-- QNA 수정 -->
+	<update id="qna_update">
+		UPDATE QNA 
+		SET QNA_TITLE = #{qna_title} , QNA_CONTENT = #{qna_content}
+		WHERE QNA_SEQ = #{qna_seq}
+	</update>
+	
+	<!-- QNA 글쓰기 -->
+	<insert id="qna_insert" parameterType="com.happypaws.vo.QnaVO">
+	    INSERT INTO QNA (qna_id, qna_title, qna_content, qna_date, qna_count, qna_del)
+	    VALUES (#{qna_id}, #{qna_title}, #{qna_content}, #{qna_date}, #{qna_count}, 'N');
+	</insert>
+	
+	<!-- QNA 삭제 -->
+	<update id="qna_delete">
+		UPDATE QNA 
+		SET QNA_DEL = 'Y'
+		WHERE QNA_SEQ = #{qna_seq}
+	</update>
+	
+	<!-- QNA 댓글기능 -->
+	<insert id="addComment">
+	    INSERT INTO QNA_COMMENT (QNA_SEQ, QNA_CMT_ID, QNA_CMT_CONTENT, QNA_CMT_DATE)
+	    VALUES (#{qna_seq}, #{qna_cmt_id}, #{qna_cmt_content}, NOW())
+	</insert>
+	
+	<!-- QNA 댓글리스트 -->
+	<select id="commentList" resultType="com.happypaws.vo.QnaCmtVO">
+	    SELECT QNA_COMMENT.* , US_nick , US_PROFILE 
+		FROM QNA_COMMENT , USERS
+	    WHERE QNA_SEQ = #{qna_seq}  and us_id = qna_cmt_id
+	    ORDER BY QNA_CMT_DATE ASC
+	</select>
+	
+	<delete id="deleteComment">
+	    DELETE FROM QNA_COMMENT WHERE QNA_CMT_SEQ = #{qna_cmt_seq}
+	</delete>
+	
+	<!-- 댓글 수정 -->
+	<update id="updateComment">
+		UPDATE QNA_COMMENT 
+		SET qna_cmt_content = #{qna_cmt_content}
+		where qna_cmt_seq = #{qna_cmt_seq}
+	</update>
+	
+</mapper>

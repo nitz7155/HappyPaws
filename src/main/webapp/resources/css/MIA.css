@@ -1,0 +1,829 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+}
+
+/* ===============================글 목록=============================== */
+.n_list {
+	width: 1000px;
+	text-align: center;
+	margin: 0 auto;
+	font-size: 18px;
+}
+
+.us_profile {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	object-fit: cover;
+	margin-top: -5px;
+	margin-right: 1px;
+}
+
+.c_category {
+	margin: 0 auto;
+	text-align: center;
+	font-size: 2rem;
+	width: inherit;
+}
+
+.c_category_ph {
+	display: none;
+}
+
+.c_category span {
+	color: #3c80e7;
+}
+
+.c_category a {
+	color: black;
+	text-decoration: none;
+}
+
+.c_category ul {
+	display: inline-block;
+	margin-bottom: 15px;
+	list-style-type: none;
+	padding-left: 0;
+}
+
+.c_category li {
+	border-right: 1px solid #ccc;
+	padding: 0 20px;
+	float: left;
+}
+
+.c_category li:last-child {
+	border-right: none;
+}
+
+.c_category ul li a:hover, .n_list .c_category ul li a:active {
+	color: #3c80e7;
+}
+
+.n_list h2 a {
+	color: black;
+	text-decoration: none;
+}
+
+.n_seachform, .n_categoryform {
+	padding-bottom: 20px;
+	width: 750px;
+	display: inline-flex; /* 한 줄에 배치 */
+	align-items: center; /* 세로 가운데 정렬 */
+	gap: 10px;
+	margin: 0 auto; /* 가로 정렬을 위해 가운데 정렬 */
+	justify-content: center; /* 내부 요소를 가로 가운데 정렬 */
+	margin-bottom: 20px;
+}
+
+.n_categoryform .category {
+	height: 40px;
+	width: 100px;
+	margin-left: 5px;
+	color: #000;
+	background-color: #fcd11e;
+	border-radius: 20px;
+	border: none;
+	cursor: pointer;
+	padding: 5px 10px;
+	font-size: 16pt;
+}
+/* 전체 리스트 영역 */
+.n_listform {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr); /* 가로로 4개씩 배치 */
+	gap: 20px;
+	max-width: 1000px;
+	margin: 0 auto;
+}
+
+/* 리스트 아이템 스타일 */
+.n_list_item {
+	border: 1px solid #fcd11e;
+	padding: 10px;
+	text-align: center;
+	background-color: #fff;
+	box-sizing: border-box;
+}
+
+.n_listform .n_list_item img {
+	width: 200px;
+	height: 200px;
+	background-color: #fff;
+	object-fit: contain;
+}
+
+.n_list_item p {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 200px;
+	vertical-align: bottom;
+	margin: 0 auto;
+}
+
+.n_list_item .title {
+	font-weight: bold;
+}
+
+.n_list_item .mark {
+	background: none;
+	color: red;
+	font-weight: bold;
+}
+
+.n_list_item .place {
+	color: blueviolet;
+}
+
+.n_list_item .reward {
+	color: seagreen;
+}
+
+.n_list_item .date {
+	color: dimgray;
+}
+
+.pagination {
+	display: flex; /* Flexbox를 사용하여 정렬 */
+	list-style: none; /* 기본 리스트 스타일 제거 */
+	padding: 0; /* 패딩 제거 */
+	margin: 0 auto; /* 위아래 여백 설정 */
+	text-align: center;
+	width: 100px;
+	margin-top: 20px;
+}
+
+.pagination .page-item {
+	margin: 0 5px; /* 페이지 아이템 간 여백 */
+	width: 30px;
+	height: 30px;
+	position: relative;
+}
+
+.pagination .page-link {
+	text-decoration: none; /* 링크의 기본 밑줄 제거 */
+	color: black; /* 기본 링크 색상 */
+	width: 100%; /* 전체 너비 사용 */
+	height: 100%; /* 전체 높이 사용 */
+	display: flex; /* Flexbox 사용 */
+	justify-content: center; /* 수평 중앙 정렬 */
+	align-items: center; /* 수직 중앙 정렬 */
+	border-radius: 50%; /* 동그라미 모양 만들기 */
+}
+
+.pagination .page-link:hover {
+	color: black;
+	font-weight: bold;
+}
+
+.pagination .active {
+	position: relative; /* 부모 요소의 위치를 기준으로 설정 */
+}
+
+.pagination .active a {
+	color: black; /* 글자색을 흰색으로 설정 */
+	background-color: #ffeb994d; /* 배경색을 노란색으로 설정 */
+	border-radius: 50%; /* 동그라미 모양을 만들기 위해 반경을 설정 */
+	border: 2px solid #fcd11e;
+	display: inline-block; /* 인라인 블록으로 설정 */
+	text-align: center; /* 중앙 정렬 */
+}
+
+@media ( max-width : 768px) {
+	.n_list {
+		width: 100%;
+	}
+	.n_list .c_category {
+		display: none;
+	}
+	.n_list .c_category_ph {
+		display: block;
+		padding-top: 15px;
+	}
+	.c_category_ph {
+		display: none;
+	}
+	.c_category_ph span {
+		color: #3c80e7;
+	}
+	.c_category_ph a {
+		color: black;
+		text-decoration: none;
+	}
+	.c_category_ph ul {
+		display: inline-block;
+		margin-bottom: 15px;
+		list-style-type: none;
+		padding-left: 0;
+	}
+	.c_category_ph li {
+		border-right: 1px solid #ccc;
+		padding: 0 20px;
+		float: left;
+	}
+	.c_category_ph li:last-child {
+		border-right: none;
+	}
+	.c_category_ph ul li a:hover, .n_list .c_category_ph ul li a:active {
+		color: #3c80e7;
+	}
+	.n_list .c_category_ph li {
+		padding: 0 5px;
+		font-size: 24px;
+	}
+	.n_seachform, .n_categoryform {
+		width: 100%;
+		display: block;
+	}
+	.n_seachform button[type="submit"] {
+		padding-top: 10px;
+		right: 0px;
+		top: auto;
+		background-color: unset;
+		width: 70px;
+	}
+	.custom-select-display {
+		width: 20%;
+	}
+	.custom-options {
+		width: 15%;
+	}
+	.n_categoryform .category {
+		width: 18%;
+		font-size: 18px;
+		margin-left: 0;
+		padding: 0;
+	}
+	.n_listform {
+		grid-template-columns: 50% 50%;
+		max-width: 95%;
+		gap: 5px;
+		font-size: 16px;
+	}
+	.n_list_item {
+		padding: 5px;
+	}
+	.n_listform .n_list_item img {
+		width: 100%;
+		height: 60%;
+		object-fit: contain;
+		background-color: #fff;
+	}
+}
+/* ===============================글 상세=============================== */
+.n_view {
+	width: 1000px;
+	margin: 0 auto;
+	font-size: 18px
+}
+
+.n_viewform {
+	width: 750px;
+	margin: 0 auto;
+}
+
+.n_view h1 {
+	text-align: center;
+	padding-top: 10px;
+}
+
+.n_view .n_title, .n_view .n_content {
+	border-bottom: 2px solid #ccc;
+}
+
+.n_title {
+	display: flex;
+	justify-content: space-between;
+	padding-bottom: 10px;
+}
+
+.n_title .title {
+	text-align: left;
+	font-size: 22px;
+	font-weight: bold;
+	max-width: 630px;
+}
+
+.n_title .author {
+	text-align: right;
+	font-size: 14px;
+	color: #888;
+	margin-top: 11px;
+	max-width: 120px;
+}
+
+.n_second {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	color: #888;
+	font-size: 14px;
+}
+
+.n_second .cnt {
+	text-align: left;
+	margin-top: 10px;
+	color: #888;
+	font-size: 14px;
+}
+
+.n_second .date {
+	text-align: right;
+	margin-top: 10px;
+	color: #888;
+	font-size: 14px;
+}
+
+.n_third {
+	display: grid; /* 그리드 레이아웃 사용 */
+	grid-template-areas: "header header" "image table"; /* 영역 정의 */
+	grid-template-rows: auto 1fr; /* 첫 행은 자동 높이, 두 번째는 나머지 차지 */
+	grid-template-columns: 1fr 1fr; /* 두 열로 분리 */
+	gap: 20px; /* 요소 사이 간격 */
+	height: 500px;
+	position: relative;
+	border-bottom: 2px solid #ccc;
+	margin-bottom: 10px;
+}
+
+.n_third .ph {
+	grid-area: header; /* 그리드의 header 영역 */
+	text-align: center; /* 중앙 정렬 */
+	font-size: 20px;
+	font-weight: bold;
+	background-color: #fff;
+	padding: 10px 20px;
+	border-radius: 5px;
+	z-index: 1; /* 다른 요소 위에 표시 */
+}
+
+.n_third img {
+	grid-area: image; /* 그리드의 image 영역 */
+	height: 400px; /* 고정 높이 */
+	width: 400px; /* 고정 너비 */
+	object-fit: contain; /* 이미지 비율 유지 */
+}
+
+.n_third .detail-table {
+	grid-area: table; /* 그리드의 table 영역 */
+	height: 400px; /* 고정 높이 */
+	width: 330px; /* 고정 너비 */
+	border-collapse: collapse;
+	text-align: left;
+	table-layout: fixed; /* 셀의 너비를 고정 */
+	word-wrap: break-word; /* 단어가 길 경우 줄바꿈 허용 */
+}
+
+.n_third .detail-table tr {
+	border-bottom: 1px solid #ccc;
+}
+
+.n_third .detail-table tr:last-child {
+	border-bottom: none;
+}
+
+.n_third .detail-table td, .n_third .detail-table th {
+	padding: 8px;
+	overflow: hidden; /* 넘치는 내용 숨기기 */
+	text-overflow: ellipsis; /* "..." 표시 */
+	white-space: nowrap; /* 한 줄로 표시 */
+}
+
+.n_third .detail-table .label {
+	font-weight: bold;
+	text-overflow: ellipsis; /* "..." 표시 */
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.n_third .detail-table .value {
+	color: #333;
+	text-overflow: ellipsis; /* "..." 표시 */
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.n_content {
+	margin-top: -2px;
+	padding-bottom: 10px;
+	font-size: 17px;
+	min-height: 200px;
+	text-align: left;
+}
+
+.n_content pre {
+	font-size: 16px;
+	font-family: 'NunNu', sans-serif;
+}
+
+.commentlist {
+	width: 1000px;
+	padding: 10px 0; /* 여백 추가 */
+	position: relative;
+}
+
+.comment {
+	width: 750px;
+	margin: 0 auto;
+	margin-top: 10px;
+	border-bottom: 1px solid #ccc; /* 구분선 */
+}
+
+.comment input {
+	margin-bottom: 5px;
+}
+
+.comment div {
+	margin-bottom: 10px;
+}
+
+.comment div strong {
+	font-weight: bold;
+}
+
+.comment div span {
+	float: right;
+	font-size: 14px;
+	color: #888;
+}
+
+.comment pre {
+	font-family: 'NunNu', sans-serif;
+	display: inline-block;
+	width: calc(100% - 40px);
+	overflow: hidden;
+}
+
+.comment textarea {
+	display: inline-block;
+	width: 100%;
+	height: 100px;
+	padding: 5px;
+	border-radius: 5px;
+}
+
+.btn-container {
+	display: flex;
+	justify-content: flex-end;
+	padding-top: 10px;
+}
+
+.comment button {
+	margin-left: 5px;
+	color: #000;
+	background-color: #fcd11e;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+.commentWrite {
+	display: flex;
+	justify-content: center;
+	width: 1000px;
+	padding: 10px 0;
+}
+
+.commentWrite strong {
+	display: block;
+	text-align: left;
+}
+
+.commentWrite textarea {
+	width: 750px;
+	height: 100px;
+	padding: 5px;
+	border-radius: 5px;
+}
+
+.commentWrite .btn-container button {
+	margin-left: auto;
+	color: #000;
+	background-color: #fcd11e;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+.commandList {
+	width: 750px;
+	margin: 0 auto;
+}
+
+.commandList .btn-container button {
+	margin-left: 5px;
+	color: #000;
+	background-color: #fcd11e;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+.comment #login_button {
+	margin-left: 5px;
+	color: #000;
+	background-color: #fcd11e;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+	padding: 5px 10px;
+	text-decoration: none;
+}
+
+@media ( max-width : 768px) {
+	.n_view {
+		width: 100%;
+	}
+	.n_viewform {
+		width: 80%;
+	}
+	.n_title {
+		padding-bottom: 5px;
+	}
+	.n_title .title {
+		max-width: 75%;
+		font-size: 18px;
+	}
+	.n_title .us_profile {
+		width: 15px;
+		height: 15px;
+	}
+	.n_title .author {
+		max-width: 25%;
+		font-size: 11px;
+		margin-top: 8px;
+	}
+	.n_second .cnt {
+		font-size: 11px;
+	}
+	.n_second .date {
+		font-size: 11px;
+	}
+	.n_second {
+		margin-top: 0;
+	}
+	.n_third {
+		gap: 5px;
+		height: 300px;		
+	}
+	.n_third .ph {
+		font-size: 18px;
+	}
+	.n_third img {
+		height: 100%;
+		width: 100%;
+	}
+	.n_third .detail-table {
+		height: 100%;
+		width: 100%;
+		font-size: 11px;
+	}
+	.n_third .detail-table td, .n_third .detail-table th {
+		padding: 0;
+	}
+	.n_content {
+		min-height: 100px;
+	}
+	.n_content pre {
+		font-size: 10pt;
+	}
+	.commentlist {
+		width: 100%;
+		padding: 0;
+	}
+	.comment {
+		width: 80%;
+	}
+	.comment .us_profile {
+		width: 15px;
+		height: 15px;
+	}
+	.comment div strong {
+		font-size: 11pt;
+	}
+	.comment div span {
+		font-size: 11px;
+	}
+	.comment pre {
+		font-size: 10pt;
+	}
+	.comment textarea {
+		width: 80%;
+		font-size: 10pt;
+		height: 75px;
+	}
+	.commentWrite {
+		width: 100%;
+		padding: 0;
+	}
+	.commentWrite input {
+		width: 30%;
+		font-size: 10pt;
+	}
+	.commentWrite strong {
+		font-size: 11pt;
+	}
+	.commentWrite textarea {
+		width: 100%;
+		font-size: 10pt;
+		height: 75px;
+	}
+	.btn-container button {
+		font-size: 10pt;
+	}
+	.comment #login_button {
+		font-size: 11pt;
+	}
+	.commandList {
+		width: 80%;
+	}
+}
+
+/*===========================글 작성 , 글 수정===============================*/
+.n_write {
+	width: 1000px;
+	text-align: center;
+	margin: 0 auto;
+	font-size: 18px;
+}
+
+.n_writeform {
+	width: 750px;
+	margin: 0 auto;
+}
+
+.n_writeform h1 {
+	text-align: center;
+	padding-top: 10px;
+}
+
+.n_write_header {
+	display: flex;
+	justify-content: space-between; /* 양쪽 끝에 배치 */
+	align-items: center;
+	margin-bottom: 10px; /* 간격 조정 */
+	font-weight: bold;
+	font-size: 20px;
+}
+
+.n_writeform .form-control {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.n_img {
+	margin-bottom: 10px;
+	height: 500px;
+	position: relative;
+}
+
+.lost-pet-image, .find-pet-image, .new-family-image {
+	padding-top: 20px;
+	display: block;
+	margin: 0 auto; /* 이미지 중앙 정렬 */
+	width: 400px;
+	height: 400px;
+	object-fit: contain;
+}
+
+.img_save {
+	position: absolute;
+	bottom: 10px; /* 이미지 하단에서 10px 위 */
+	left: 50%;
+	transform: translateX(-50%); /* 중앙 정렬 */
+	padding: 5px 10px;
+	border-radius: 5px;
+	color: #000;
+	background-color: #fcd11e;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+.n_writeform .detail-table {
+	width: 100%; /* 테이블의 가로 크기 */
+	height: 400px; /* 테이블의 세로 크기 */
+	margin: 0 auto;
+	border-collapse: collapse;
+	text-align: left; /* 테이블 내 텍스트 왼쪽 정렬 */
+	border-top: 2px solid #ccc;
+}
+
+.n_writeform .n_detail .detail-table .detail-row {
+	border-bottom: 2px solid #ccc;
+}
+
+.n_writeform .n_detail .detail-table td, .n_third .detail-table th {
+	padding: 8px;
+}
+
+.n_writeform .n_detail .detail-table .label {
+	font-weight: bold;
+}
+
+.n_writeform .n_detail .detail-table .value {
+	color: #333;
+}
+
+.btn-container button {
+	margin-left: 5px;
+	color: #000;
+	background-color: #fcd11e;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+@media ( max-width : 768px) {
+	.n_write {
+		width: 100%;
+	}
+	.n_writeform {
+		width: 80%;
+	}
+	.n_write_header {
+		font-size: 18px;
+	}
+	.n_writeform input {
+		font-size: 10pt;
+	}
+	.n_img {
+		height: 65vw
+	}
+	.lost-pet-image, .find-pet-image, .new-family-image {
+		padding-top: 10px;
+		width: 50vw;
+		height: 50vw;
+	}
+	.img_save {
+		font-size: 10pt;
+		bottom: 2vw;
+	}
+	.n_writeform .detail-table {
+		font-size: 16px;
+	}
+	.n_writeform .form-control {
+		font-size: 10pt;
+	}
+}
+
+/*===========================비회원 글 삭제 , 글 수정===============================*/
+.passwordBox {
+	display: block;
+	height: 400px;
+	margin-top: 100px;
+}
+
+.passwordInner {
+	width: 400px;
+	height: 220px;
+	padding-top: 50px;
+	border: 3px solid #ccc;
+	margin: 0 auto;
+}
+
+.passwordInner strong {
+	display: block;
+	text-align: center;
+}
+
+.passwordInner input {
+	display: block;
+	margin: 10px auto;
+}
+
+.passwordInner .btn-container {
+	justify-content: center;
+}
+
+@media ( max-width : 768px) {
+	.passwordBox {
+		height: 300px;
+	}
+	.passwordInner {
+		width: 250px;
+		height: 150px;
+		padding-top: 20px;
+	}
+	.passwordInner strong {
+		font-size: 16px
+	}
+	.passwordInner input {
+		font-size: 16px
+	}
+	.passwordInner .btn-container {
+		padding: 0;
+		font-size: 10pt;
+	}
+}

@@ -1,0 +1,395 @@
+* { box-sizing: border-box; }
+
+@font-face {
+    font-family: 'NunNu';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-R.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NunNu';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-B.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'NunNu', sans-serif;
+    /* font-family: 'HakgyoansimDunggeunmisoTTF-R', sans-serif; */
+    font-size: 18px;
+    height: 100%;   
+}
+
+body {
+    /* display: flex; */
+    flex-direction: column;
+    min-height: 100vh;    /* 뷰포트 전체 높이를 채움 */
+}
+
+.ql-editor {
+    font-size: 18px;
+    font-family: 'NunNu', sans-serif;
+    /* font-family: 'HakgyoansimDunggeunmisoTTF-R', sans-serif; */
+}
+
+.ql-align-center {
+    text-align: center;
+}
+
+.ql-align-right {
+    text-align: right;
+}
+
+.ql-align-left {
+    text-align: left;
+}
+
+/* 고정된 헤더 스타일 */
+header {
+    width: 100%;
+    position: fixed;      /* 스크롤해도 고정되도록 설정 */
+    top: 0;               /* 화면 위쪽에 고정 */
+    left: 0;
+    z-index: 1000;        /* 콘텐츠 위로 올라오도록 설정 */
+    display: flex;
+    justify-content: center;
+    position: relative;
+    padding-top: 20px;
+    border-bottom: 1px solid #ccc;
+}
+
+/* 헤더 내부 컨테이너 */
+.header-container {
+    width: 1000px;         /* 헤더 폭을 1000px로 설정 */
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+/* 로고 스타일 */
+.logo img {
+    height: 50px;         /* 로고 크기 조절 */
+    margin-top: -15px;
+}
+
+/* 메뉴 스타일 */
+.header-menu {
+    display: flex;          /* 메뉴 항목을 가로로 나열 */
+    gap: 20px;              /* 메뉴 간 간격 */
+    margin-left: 20px; 
+}
+
+/* 메뉴 스타일 */
+.header-menu a {
+    text-decoration: none;
+    margin: 0 15px;        /* 메뉴 간 간격 */
+    padding: 5px 0;
+    transition: color 0.3s;
+    color:black;
+}
+
+/* a 태그에 마우스 오버 시 텍스트 색상 변경 */
+.header-menu a:hover {
+    color: #ffcc00;  /* 텍스트 색상을 노란색으로 변경 */
+}
+
+/* a 태그 기본 스타일 */
+.header-menu a {
+    color: #333;
+    text-decoration: none;
+    position: relative; /* a 태그를 기준으로 ::before 요소 위치 설정 */
+    padding-top: 10px;  /* 위쪽에 여유 공간 추가 */
+    transition: color 0.3s;
+}
+
+/* a 태그에 마우스 오버 시 텍스트 색상 변경 */
+.header-menu a:hover {
+    color: #ffcc00;  /* 텍스트 색상을 노란색으로 변경 */
+}
+
+/* a 태그에 마우스를 올렸을 때 위쪽에 노란색 동그라미가 작게 나타나도록 설정 */
+.header-menu a::before {
+    content: "";
+    position: absolute;
+    bottom: 60%;            /* a 태그 바로 위에 위치 */
+    left: 100%;
+    width: 8px;              /* 동그라미 크기 */
+    height: 8px;
+    background-color: #ffcc00; /* 동그라미 색상 */
+    border-radius: 50%;      /* 동그라미 모양으로 만들기 */
+    transform: translateX(-50%) scale(0); /* 기본 상태에서 숨김 */
+    transition: transform 0.3s ease; /* 부드러운 애니메이션 */
+}
+
+/* 마우스를 올렸을 때 노란색 동그라미가 나타나도록 설정 */
+.header-menu a:hover::before , .header-menu a.active::before {
+    transform: translateX(-50%) scale(1); /* 원래 크기로 나타나기 */
+}
+
+/* 활성화된 링크 스타일 */
+.header-menu a.active {
+    color: #ffcc00; /* 활성화된 링크의 색상 */
+}
+
+/* 컨테이너  */
+main {
+	width:1000px;
+	margin: 0 auto;
+	margin-top: 20px;
+	flex: 1;  
+}
+
+/*푸터*/
+footer {
+	width:100%;
+	padding: 10px;
+	text-align: center;
+	font-size: 14px;
+	line-height: 1.5;
+	border-top: 1px solid #ccc;
+	margin-top: 40px;
+    clear: both;
+}
+
+footer p {
+	margin: 0;
+	padding: 5px 0;
+}
+
+footer a{
+	display: inline;
+	color: black;
+	text-decoration: none;
+}
+
+/* 로그인 버튼 */
+.header-login-div {
+    margin-left: auto;      /* 로그인 링크를 오른쪽으로 이동 */
+}
+
+.header-login-div a {
+    display: inline;
+    font-weight: bold;
+}
+
+.header-login-div img {
+    height: 45px;
+    border-radius: 22px;
+}
+
+.header-login-link {
+    text-decoration: none;
+    font-size: 20px;
+    padding-left: 5px;
+    transition: color 0.3s;
+}
+
+.header-login-link:hover {
+    color: #ffcc00;
+}
+
+/* 페이지 CSS */
+.pagination {
+    padding-top: 0 !important; /* 상단 패딩 제거 */
+    padding-bottom: 0 !important; /* 하단 패딩 제거 */
+    --bs-pagination-border-color : none !important; 
+    display: flex !important; /* Flexbox를 사용하여 정렬 */
+    list-style: none !important; /* 기본 리스트 스타일 제거 */
+    padding: 0 !important; /* 패딩 제거 */
+    margin: 0 auto !important; /* 위아래 여백 설정 */
+    text-align: center !important;
+    width:fit-content  !important;
+    margin-top: 20px !important;
+}
+
+.pagination .page-item {
+    margin: 0 5px !important; /* 페이지 아이템 간 여백 */
+    width: 30px !important;
+    height: 30px !important;
+    position: relative !important;
+}
+
+.pagination .page-link {
+    text-decoration: none !important;
+    color: black !important;
+    width: 30px !important;
+    height: 30px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 50% !important;
+    line-height: normal !important; /* 기본 부트스트랩 설정 덮어쓰기 */
+    vertical-align: middle !important; /* 텍스트 가운데 정렬 */
+    padding: 0 !important; /* 부트스트랩의 기본 패딩 제거 */
+}
+
+.pagination .page-link{
+    background-color: unset !important;
+}
+
+.pagination .page-link:hover {
+    color: #fcd11e !important;
+  
+}
+
+.pagination .active {
+    position: relative !important; /* 부모 요소의 위치를 기준으로 설정 */
+}
+
+.pagination .active a {
+    width: 30px !important; /* 동그라미의 너비를 키움 */
+    height: 30px !important; /* 동그라미의 높이를 키움 */
+    color: black !important;
+    background-color: #ffeb994d !important;
+    border-radius: 50% !important;
+    border: 2px solid #fcd11e !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    line-height: normal !important; /* 클릭된 버튼의 텍스트 위치 문제 해결 */
+    padding: 0 !important; /* 추가 패딩 제거 */
+}
+
+/*관리자 css*/
+.admin-header-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font-size: 20px;
+}
+.admin-header-container .header-menu {
+    gap: 10px;
+}
+.admin-header-container .logo{
+    width: 200px;
+    text-align: center;
+}
+aside {
+    position: fixed;
+    width: 200px;
+    padding: 20px;
+    box-sizing: border-box;
+    border-right: 1px solid #ddd;
+    min-height: 100vh;
+    font-size: 18px;
+    margin-top: -44px;
+    background-color: #fff;
+    z-index: 50;
+}
+
+aside a{
+	color: black;
+    text-decoration: none;
+    margin-left: 20px;
+}
+
+aside h3 {
+    margin-top: 25px;
+    text-align: left;
+}
+aside ul {
+    list-style: none;
+    padding: 0;
+}
+aside li {
+    margin: 10px 0;
+    text-align: left;
+}
+
+/* 반응형 스타일 */
+.menu-toggle {
+    display: none;
+    cursor: pointer;
+}
+
+.header-menu .logout{
+    	display: none;
+ }
+
+@media (max-width: 768px) {
+    .logo img{
+        height: 40px;
+        margin-top: -6px;
+    }
+    /* 메뉴 토글 버튼 보이기 */
+    .menu-toggle {
+        display: block;
+        font-size: 18px;
+        margin-right:10px; 
+        margin-left: 10px;
+    }
+     .menu-toggle img {
+     	width: 30px;
+     }
+    
+    /* 헤더 메뉴 숨기기 */
+    .header-menu {
+        max-height: 0;
+        overflow: hidden;
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 73px;
+        right: 0px;
+        background-color: #fffffff5;
+        padding: 6px;
+        transition: max-height 0.5s ease; /* 부드러운 전환 효과 */
+        border-bottom: 1px solid #ddd;
+    }
+    .header-menu.show {
+        max-height: inherit; /* 메뉴가 완전히 열렸을 때의 최대 높이 설정 (충분히 큰 값으로 설정) */
+    }
+
+    /* 메뉴 항목 스타일 */
+    .header-menu a {
+        text-align: center;
+        color: #333;
+    }
+    
+    .header-menu a::before {
+	    bottom: 54%;            /* a 태그 바로 위에 위치 */
+	    left: 61%;
+	}
+    /* 메뉴 보이기 */
+    .header-menu.show {
+        display: flex;
+        border-bottom: 2px solid #adb5bd;
+    }
+
+    header{
+        border-bottom: none;
+    }
+    main{
+        width:100%;
+        margin-top: 1px;
+    }
+    
+    .header-login-div b{
+    	font-size: 16px;
+    }
+    
+    .header-login-div .header-login-link{
+    	font-size: 16px;
+    }
+    
+    .header-login-div .logout{
+    	display: none;
+    }
+    .header-menu .logout{
+    	display: block;
+    	font-weight: bold;
+    	color:rgba(var(--bs-link-color-rgb),var(--bs-link-opacity,1));
+    }
+    .header-login-div img{
+    	margin-top: -10px;
+    }
+    footer p:nth-child(2) {
+    	font-size: 11px;
+	}
+}

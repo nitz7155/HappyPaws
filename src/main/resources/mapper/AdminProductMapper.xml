@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ProductsDAO">
+	<!-- 상품 등록 -->
+    <insert id="addProduct" useGeneratedKeys="true" keyProperty="pr_id">
+        INSERT INTO products (pr_name, pr_desc, pr_detail_desc, pr_up_date,  pr_category, pr_thumbnail, pr_price,pr_status)
+        VALUES (#{pr_name}, #{pr_desc}, #{pr_detail_desc}, NOW(),  #{pr_category}, #{pr_thumbnail}, #{pr_price},#{pr_status})
+    </insert>
+
+	<!--     상품 목록 조회 -->
+    <select id="adminProductList" resultType = "products">
+    SELECT * FROM products WHERE 1=1
+    	<if test="pr_category != null and pr_category != ''"> AND PR_CATEGORY = #{pr_category}</if>
+		<if test="searchCondition == 'TITLE' "> AND PR_NAME LIKE CONCAT('%',#{searchKeyword},'%') </if>
+		<if test="searchCondition == 'CONTENT' "> AND PR_DESC LIKE CONCAT('%',#{searchKeyword},'%') </if>
+		ORDER BY PR_ID DESC 
+		limit #{listcnt} offset #{start}
+    </select>
+
+	<!-- 상품 옵션 목록 조회 -->
+	<select id="adminProductOption" resultType = "productOptions">
+		select * from product_options WHERE pr_id = #{pr_id}
+	</select>
+	
+	<!-- 상품 옵션 목록 조회 - where조건 없음 -->
+	<select id="allOpts" resultType = "productOptions">
+		select * from product_options
+	</select>
+	
+<!-- 	상품 수정 -->
+	<update id="modifyProduct">
+		UPDATE products
+		SET pr_name = #{pr_name}, pr_desc = #{pr_desc}, pr_detail_desc = #{pr_detail_desc}, pr_status = #{pr_status},
+		pr_category = #{pr_category}, pr_thumbnail = #{pr_thumbnail}, pr_price = #{pr_price}
+		WHERE pr_id = #{pr_id}
+	</update>
+	
+<!-- 	2. 상품 삭제 -->
+	<delete id="deleteProduct">
+		DELETE FROM products WHERE pr_id = #{pr_id}
+	</delete>
+<!-- 	2-1. 상품 옵션 삭제 -->
+	<delete id="deleteProductOpt">
+		DELETE FROM product_options WHERE pr_id = #{pr_id}
+	</delete>
+<!-- 	2-2. 상품 옵션 추가! 글 등록 시에도 사용됨. -->
+	<insert id="addProductOption" >
+		INSERT INTO product_options (pr_id, pr_opt_id, pr_opt_name, pr_opt_stock, pr_opt_price,pr_opt_status)
+		values (#{pr_id}, #{pr_opt_id}, #{pr_opt_name}, #{pr_opt_stock},#{pr_opt_price},#{pr_opt_status})
+	</insert>
+
+	<!-- 상품 수정 + 조회 - 상품 -->
+	<select id="getProduct" resultType="products">
+		SELECT * FROM products WHERE pr_id = #{pr_id}
+	</select>
+    
+    
+    <!-- 총 상품 갯수 출력 -->
+    <select id="countProducts" resultType="int">
+    	SELECT COUNT(*) FROM products WHERE 1=1
+    	<if test="pr_category != null and pr_category != ''"> AND PR_CATEGORY = #{pr_category}</if>
+    	<if test="searchCondition == 'TITLE' "> AND pr_name LIKE CONCAT('%',#{searchKeyword},'%') </if>
+    	<if test="searchCondition == 'CONTENT' "> AND pr_desc LIKE CONCAT('%',#{searchKeyword},'%') </if>
+    </select>
+    
+	
+	<!-- 상품 총 개수 -->
+	<select id="getProductId" resultType="int">
+		SELECT PR_ID FROM products WHERE PR_NAME = #{pr_name}
+	</select>
+    
+</mapper>

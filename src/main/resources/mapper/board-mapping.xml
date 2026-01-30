@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="NoticeDAO">
+	<!-- 시작 페이지 -->
+	<select id="notice_index" resultType="com.happypaws.vo.NoticeVO">
+		SELECT * FROM notice WHERE n_chk="Y" AND n_del="N" ORDER BY n_seq DESC limit 1
+	</select>
+
+	<!-- 글 등록 -->
+	<insert id="notice_insert">
+		INSERT INTO notice (N_ID, N_TITLE, N_CONTENT, N_DATE, N_COUNT, N_CHK) 
+		VALUES (#{n_id}, #{n_title}, #{n_content}, #{n_date}, 0, #{n_chk})
+	</insert>
+	
+	<!-- 목록보기 -->
+	<select id="notice_list" resultType="com.happypaws.vo.NoticeVO">
+		SELECT notice.* , us_nick , us_profile 
+		FROM notice , users
+		WHERE 1=1 AND N_DEL = 'N' AND n_id = us_id
+		<if test="searchCondition == 'TITLE' "> AND N_TITLE LIKE CONCAT('%',#{searchKeyword},'%') </if>
+		<if test="searchCondition == 'CONTENT' "> AND N_CONTENT LIKE CONCAT('%',#{searchKeyword},'%') </if>
+		ORDER BY n_chk DESC , n_seq desc
+		limit #{listcnt} offset #{start}
+	</select>
+	
+	<!-- 상세보기 -->
+	<select id="notice_view" resultType="com.happypaws.vo.NoticeVO">
+		SELECT notice.* , us_nick , us_profile 
+		FROM notice , users 
+		WHERE N_SEQ= #{n_seq} AND N_DEL = 'N' AND n_id = us_id
+	</select>
+	
+	<!-- 조회수 카운트 -->
+	<update id="notice_count">
+		UPDATE notice SET N_COUNT = IFNULL(#{n_count}, 0)+1 WHERE n_seq = #{n_seq}
+	</update>
+	
+	<!-- 글 수정 -->
+	<update id="notice_update">
+		UPDATE notice 
+		SET N_TITLE = #{n_title} , N_CONTENT = #{n_content} , N_CHK = #{n_chk}
+		WHERE N_SEQ = #{n_seq}
+	</update>
+	
+	<!-- 글 삭제 -->
+	<update id="notice_delete">
+		UPDATE notice 
+		SET N_DEL = 'Y'
+		WHERE N_SEQ = #{n_seq}
+	</update>
+	
+	<!--  게시판 글 갯수 -->
+	<select id="countNotice" resultType="int">
+		SELECT COUNT(*) FROM notice WHERE 1=1 AND N_DEL = 'N'
+		<if test="searchCondition == 'TITLE' "> AND N_TITLE LIKE CONCAT('%',#{searchKeyword},'%') </if>
+		<if test="searchCondition == 'CONTENT' "> AND N_CONTENT LIKE CONCAT('%',#{searchKeyword},'%') </if>
+	</select>
+	
+	<!-- 차트 통계 / 판매량 7일 -->
+	 <select id="getDaysTotalAmount" resultType="map">
+        WITH RECURSIVE dates AS (
+		    SELECT CURDATE() AS `date`
+		    UNION ALL
+		    SELECT DATE_SUB(`date`, INTERVAL 1 DAY)
+		    FROM dates
+		    WHERE `date` > DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+		)
+		SELECT 
+		    d.`date`,
+		    IFNULL(SUM(po.PROR_TOTAL_AMT), 0) AS `total_amount`
+		FROM 
+		    dates d
+		LEFT JOIN 
+		    products_orders po 
+		    ON DATE(po.PROR_DATE) = d.`date` 
+		    AND po.pror_status != 'cancelled'
+		GROUP BY 
+		    d.`date`
+		ORDER BY 
+		    d.`date`
+    </select>
+	
+	<!-- 전체 7일  -->
+	<select id="info" resultType="com.happypaws.vo.InfoVO" >
+		WITH RECURSIVE dates AS (
+		    SELECT CURDATE() AS `date`
+		    UNION ALL
+		    SELECT DATE_SUB(`date`, INTERVAL 1 DAY)
+		    FROM dates
+		    WHERE `date` > DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+		)
+		SELECT 
+		    DATE_FORMAT(d.`date`, '%m-%d') AS `date`,
+		    IFNULL(SUM(po.PROR_TOTAL_AMT), 0) AS `total_amount`,
+		    (
+		        SELECT COUNT(*) 
+		        FROM community c 
+		        WHERE DATE(c.cmty_date) = d.`date`
+		        AND c.cmty_del = 'N'
+		    ) AS `community_count`,
+		    (
+		        SELECT COUNT(*) 
+		        FROM users u 
+		        WHERE DATE(u.us_date) = d.`date`
+		    ) AS `users_count`
+		FROM 
+		    dates d
+		LEFT JOIN 
+		  products_orders po 
+		  ON DATE(po.PROR_DATE) = d.`date` 
+		  AND po.pror_status != 'cancelled' 
+		GROUP BY 
+		    d.`date`
+		UNION ALL
+		SELECT 
+		    '합계' AS `date`, 
+		    SUM(IFNULL(po.PROR_TOTAL_AMT, 0)) AS `total_amount`,
+		    (
+		        SELECT COUNT(*) 
+		        FROM community c 
+		        WHERE DATE(c.cmty_date) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
+		        AND c.cmty_del = 'N'
+		    ) AS `community_count`,
+		    (
+		        SELECT COUNT(*) 
+		        FROM users u 
+		        WHERE DATE(u.us_date) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
+		    ) AS `users_count`
+		FROM 
+		    products_orders po
+		WHERE 
+		     DATE(po.PROR_DATE) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
+    		AND po.pror_status != 'cancelled'
+		ORDER BY 
+		    `date`
+	</select>
+	
+</mapper>

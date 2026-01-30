@@ -1,0 +1,761 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ProductDAO">
+
+	<select id="getProductListCount" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM VW_ACTIVE_PRODUCTS 
+	    WHERE 1 = 1
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND PR_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+	    </if>
+	    <if test="pr_category != null and pr_category != ''">
+	        AND PR_CATEGORY = #{pr_category}
+	    </if>
+	</select>
+	
+	<select id="getProductList" resultType="product">
+	    SELECT p.*, 
+	           COALESCE((SELECT AVG(pc.PRC_RATING) 
+	                     FROM VW_ACTIVE_PRODUCTS_COMMENTS pc 
+	                     WHERE pc.PR_ID = p.PR_ID), 0) as avgRating,
+	           (SELECT COUNT(*) 
+	            FROM VW_ACTIVE_PRODUCTS_COMMENTS pc 
+	            WHERE pc.PR_ID = p.PR_ID) as reviewCount
+	    FROM VW_ACTIVE_PRODUCTS p 
+	    WHERE 1 = 1
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND PR_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+	    </if>
+	    <if test="pr_category != null and pr_category != ''">
+	        AND PR_CATEGORY = #{pr_category}
+	    </if>
+	    <choose>
+	        <when test="sortType == 'latest'">
+	            ORDER BY PR_ID DESC
+	        </when>
+	        <when test="sortType == 'rating'">
+	            ORDER BY avgRating DESC, PR_ID DESC
+	        </when>
+	        <when test="sortType == 'price_low'">
+	            ORDER BY PR_PRICE ASC, PR_ID DESC
+	        </when>
+	        <when test="sortType == 'price_high'">
+	            ORDER BY PR_PRICE DESC, PR_ID DESC
+	        </when>
+	        <otherwise>
+	            ORDER BY PR_ID DESC
+	        </otherwise>
+	    </choose>
+	    LIMIT #{rowFirst}, #{rowSizePerPage}
+	</select>
+	
+	<select id="getProductDetail" resultType="product">
+		SELECT * 
+		FROM VW_ACTIVE_PRODUCTS P 
+		LEFT JOIN PRODUCT_OPTIONS PO 
+		ON P.PR_ID = PO.PR_ID 
+		WHERE P.PR_ID = #{pr_id}
+	</select>
+	
+	<select id="getProductReviewRating" resultType="product">
+		SELECT * 
+		FROM VW_ACTIVE_PRODUCTS_COMMENTS 
+		WHERE PR_ID = #{pr_id}
+	</select>
+	
+	<select id="getProductReview" resultType="product">
+	    SELECT pc.*, o.US_ID
+	    FROM VW_ACTIVE_PRODUCTS_COMMENTS pc
+	    JOIN PRODUCTS_ORDERS_ITEMS i ON pc.PROR_ITEM_ID = i.PROR_ITEM_ID
+	    JOIN PRODUCTS_ORDERS o ON i.PROR_MASTER_ID = o.PROR_MASTER_ID
+	    WHERE pc.PR_ID = #{pr_id} 
+	    <choose>
+	        <when test="sortType == 'rating'">
+	            ORDER BY pc.PRC_RATING DESC, pc.PRC_START_DATE DESC
+	        </when>
+	        <when test="sortType == 'latest'">
+	            ORDER BY pc.PRC_START_DATE DESC, pc.PRC_NO DESC
+	        </when>
+	        <when test="sortType == 'my' and us_id != null and us_id != ''">
+	            AND o.US_ID = #{us_id}
+	            ORDER BY pc.PRC_START_DATE DESC, pc.PRC_NO DESC
+	        </when>
+	        <otherwise>
+	            ORDER BY pc.PRC_NO DESC
+	        </otherwise>
+	    </choose>
+	    LIMIT #{rowFirst}, #{rowSizePerPage}
+	</select>
+	
+	<select id="getMyReviewCount" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM PRODUCTS_COMMENTS pc
+	    JOIN PRODUCTS_ORDERS_ITEMS i ON pc.PROR_ITEM_ID = i.PROR_ITEM_ID
+	    JOIN PRODUCTS_ORDERS o ON i.PROR_MASTER_ID = o.PROR_MASTER_ID
+	    WHERE pc.PR_ID = #{pr_id} 
+	    AND o.US_ID = #{us_id}
+	    AND pc.PRC_STATUS = 'Y'
+	</select>
+	
+	<!-- 새 리뷰 추가 -->
+	<insert id="setProductReview" parameterType="product" useGeneratedKeys="true" keyProperty="prc_no">
+	    INSERT INTO PRODUCTS_COMMENTS
+	    (US_ID, PR_ID, PROR_ITEM_ID, PR_OPT_ID, PR_OPT_NAME, 
+	     PRC_DESC, PRC_IMAGE, PRC_RATING, PRC_START_DATE, PRC_STATUS,
+	     PROR_MASTER_ID, PRC_REVIEW_DEADLINE)
+	    VALUES
+	    (#{us_id}, #{pr_id}, #{pror_item_id}, #{pr_opt_id}, #{pr_opt_name},
+	     #{prc_desc}, #{prc_image}, #{prc_rating}, #{prc_start_date}, 'Y',
+	     #{pror_master_id}, #{prc_review_deadline})
+	</insert>
+	
+	<update id="deleteProductReview">
+	    UPDATE PRODUCTS_COMMENTS 
+	    SET PRC_STATUS = "N"
+	    WHERE PRC_NO = #{prc_no}
+	</update>
+		
+	<select id="getProductQuestion" resultType="product">
+	    WITH QuestionPaging AS (
+	        SELECT *
+	        FROM VW_ACTIVE_PRODUCTS_QNA
+	        WHERE PR_ID = #{pr_id}
+	        AND PRQ_COMMENTS IS NULL  -- 원본 문의글만 페이징
+	        ORDER BY PRQ_NO DESC
+	        LIMIT #{rowFirst}, #{rowSizePerPage}
+	    )
+	    SELECT *
+	    FROM VW_ACTIVE_PRODUCTS_QNA
+	    WHERE PR_ID = #{pr_id}
+	    AND (
+	        PRQ_NO IN (SELECT PRQ_NO FROM QuestionPaging)  
+	        OR (PRQ_COMMENTS IS NOT NULL                  
+	            AND PRQ_NO IN (SELECT PRQ_NO FROM QuestionPaging))
+	    )
+	    ORDER BY PRQ_NO DESC, PRQ_COMMENTS IS NULL DESC    
+	</select>
+	
+	<insert id="setProductQuestion">
+	    INSERT INTO PRODUCTS_QNA 
+	    (US_ID, PR_ID, PRQ_DESC, PRQ_DATE) 
+	    VALUES 
+	    (#{us_id}, #{pr_id}, #{prq_desc}, #{prq_date})
+	</insert>
+	
+	<delete id="deleteProductQuestion">
+	    UPDATE PRODUCTS_QNA 
+	    SET PRQ_STATUS = "N"
+	    WHERE PRQ_NO = #{prq_no}
+	</delete>
+	
+	<insert id="setProductQuestionComments">
+	    INSERT INTO PRODUCTS_QNA 
+	    (US_ID, PR_ID, PRQ_NO, PRQ_DESC, PRQ_COMMENTS, PRQ_DATE)
+	    SELECT 
+	        US_ID, 
+	        PR_ID, 
+	        PRQ_NO, 
+	        PRQ_DESC, 
+	        #{prq_comments},
+	        #{prq_date}  <!-- 현재 날짜 추가 -->
+	    FROM PRODUCTS_QNA
+	    WHERE PRQ_NO = #{prq_no} AND PRQ_COMMENTS IS NULL
+	</insert>
+	
+	<select id="getProductQuestionCount" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM VW_ACTIVE_PRODUCTS_QNA  
+	    WHERE PR_ID = #{pr_id} 
+	    AND PRQ_COMMENTS IS NULL  -- 답변이 없는 원본 문의글만 카운트
+	</select>
+	
+	<insert id="addToCart">
+	    INSERT INTO PRODUCTS_SHOPPING_CARTS 
+	    (US_ID, PR_ID, PR_THUMBNAIL, PR_NAME, PR_OPT_NAME, PR_OPT_PRICE, PRSC_QUANTITY, PRSC_PRICE)
+	    VALUES 
+	    (#{us_id}, #{pr_id}, #{pr_thumbnail}, #{pr_name}, #{pr_opt_name}, #{pr_opt_price}, #{prsc_quantity}, #{prsc_price})
+	</insert>
+	
+	<select id="getCartList" resultType="product">
+	    SELECT * FROM PRODUCTS_SHOPPING_CARTS 
+	    WHERE US_ID = #{us_id}
+	    ORDER BY PRSC_NO ASC
+	</select>
+	
+	<update id="updateCartQuantity">
+	    UPDATE PRODUCTS_SHOPPING_CARTS 
+	    SET PRSC_QUANTITY = #{prsc_quantity},
+	        PRSC_PRICE = #{prsc_price}
+	    WHERE PRSC_NO = #{prsc_no}
+	</update>
+	
+	<delete id="removeFromCart">
+	    DELETE FROM PRODUCTS_SHOPPING_CARTS 
+	    WHERE US_ID = #{us_id} 
+	    AND PR_ID = #{pr_id}
+	    AND PR_OPT_NAME = #{pr_opt_name}
+	</delete>	
+	
+	<select id="checkCartDuplicate" resultType="int">
+    SELECT COUNT(*) 
+    FROM PRODUCTS_SHOPPING_CARTS 
+    WHERE US_ID = #{us_id} 
+    AND PR_ID = #{pr_id} 
+    AND PR_OPT_NAME = #{pr_opt_name}
+	</select>
+	
+	<!-- 주문 마스터 등록 -->
+	<insert id="setProductOrder" parameterType="product" useGeneratedKeys="true" keyProperty="pror_master_id">
+	    INSERT INTO PRODUCTS_ORDERS (
+	        US_ID, US_EMAIL, PROR_DATE, PROR_STATUS, PROR_DELI_STAT,
+	        PROR_RECIPIENT, PROR_PHONE, PROR_ADDR, PROR_ADDR_DETAIL,
+	        PROR_ZIPCODE, PROR_TOTAL_AMT, PROR_SHIP_COST, 
+	        PROR_PRODUCT_AMT, PROR_PAY_METHOD, MERCHANT_UID, IMP_UID
+	    ) VALUES (
+	        #{us_id}, #{us_email}, #{pror_date}, #{pror_status}, #{pror_deli_stat},
+	        #{pror_recipient}, #{pror_phone}, #{pror_addr}, #{pror_addr_detail},
+	        #{pror_zipcode}, #{pror_total_amt}, #{pror_ship_cost},
+	        #{pror_product_amt}, #{pror_pay_method}, #{merchant_uid}, #{imp_uid}
+	    )
+	</insert>
+	
+	<!-- 주문 상세 등록 -->
+	<insert id="setProductOrderItem" parameterType="product">
+	    INSERT INTO PRODUCTS_ORDERS_ITEMS (
+	        US_ID, PR_ID, PR_NAME, PR_OPT_NAME, PR_OPT_PRICE,
+	        PROR_MASTER_ID, PROR_ITEM_QTT, PROR_ITEM_AMT
+	    ) VALUES (
+	        #{us_id}, #{pr_id}, #{pr_name}, #{pr_opt_name}, #{pr_opt_price},
+	        #{pror_master_id}, #{pror_item_qtt}, #{pror_item_amt}
+	    )
+	</insert>
+	
+	<!-- 주문 상세 조회 -->
+	<select id="getProductOrder" resultType="product">
+	    SELECT 
+	        o.*,
+	        o.US_ID as us_id,  <!-- 명시적으로 US_ID 필드 추가 -->
+	        u.US_EMAIL as us_email,
+	        o.MERCHANT_UID,
+	        o.IMP_UID
+	    FROM PRODUCTS_ORDERS o
+	    JOIN USERS u ON o.US_ID = u.US_ID
+	    WHERE o.PROR_MASTER_ID = #{pror_master_id}
+	    LIMIT 1
+	</select>
+	
+	<!-- 사용자별 주문 목록 조회 -->
+	<select id="getProductOrderList" resultType="product">
+	    SELECT 
+	        o.PROR_MASTER_ID,
+	        o.PROR_DATE,
+	        o.PROR_STATUS,
+	        o.PROR_PAY_METHOD,
+	        o.PROR_TOTAL_AMT,
+	        o.PROR_DELI_STAT,
+	        CONCAT(
+	            firstItem.pr_name, 
+	            CASE 
+	                WHEN itemCount.cnt > 1 
+	                THEN CONCAT(' 외 ', (itemCount.cnt - 1), '개')
+	                ELSE ''
+	            END
+	        ) as pr_name
+	    FROM PRODUCTS_ORDERS o
+		LEFT JOIN (
+		    SELECT PROR_MASTER_ID, 
+		           CASE 
+		               WHEN CHAR_LENGTH(pr_name) > 18 
+		               THEN CONCAT(LEFT(pr_name, 18), '...')
+		               ELSE pr_name
+		           END as pr_name,
+		           pr_opt_name
+		    FROM PRODUCTS_ORDERS_ITEMS items1
+		    WHERE items1.PROR_ITEM_ID = (
+		        SELECT MIN(PROR_ITEM_ID)
+		        FROM PRODUCTS_ORDERS_ITEMS items2
+		        WHERE items2.PROR_MASTER_ID = items1.PROR_MASTER_ID
+		    )
+		) firstItem ON o.PROR_MASTER_ID = firstItem.PROR_MASTER_ID
+	    LEFT JOIN (
+	        SELECT PROR_MASTER_ID, COUNT(*) as cnt
+	        FROM PRODUCTS_ORDERS_ITEMS
+	        GROUP BY PROR_MASTER_ID
+	    ) itemCount ON o.PROR_MASTER_ID = itemCount.PROR_MASTER_ID
+	    WHERE o.US_ID = #{us_id}
+	    AND DATE(o.PROR_DATE) BETWEEN #{startDate} AND #{endDate}
+	    ORDER BY o.PROR_MASTER_ID DESC
+	    LIMIT #{rowFirst}, #{rowSizePerPage}
+	</select>
+	
+	<!-- 주문 상태 업데이트 -->
+	<update id="updateOrderStatus">
+	    UPDATE PRODUCTS_ORDERS 
+	    SET PROR_STATUS = #{pror_status} 
+	    WHERE PROR_MASTER_ID = #{pror_master_id}
+	</update>
+	
+	<!-- 주문 후 장바구니 비우기 -->
+	<delete id="deleteCartAfterOrder">
+	    DELETE FROM PRODUCTS_SHOPPING_CARTS 
+	    WHERE US_ID = #{us_id} 
+	    AND PR_ID = #{pr_id}
+	    AND PR_OPT_NAME = #{pr_opt_name}
+	</delete>
+	
+	<!-- 구매 이력 확인 - 리뷰 작성 권한 체크용 -->
+	<select id="checkPurchaseHistory" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM PRODUCTS_ORDERS o
+	    JOIN PRODUCTS_ORDERS_ITEMS i ON o.PROR_MASTER_ID = i.PROR_MASTER_ID
+	    WHERE o.US_ID = #{us_id}
+	    AND i.PR_ID = #{pr_id}
+	    AND o.PROR_STATUS = 'paid'  
+	</select>
+	
+	<!-- 해당 상품에 대한 리뷰 작성 여부 확인 (중복 리뷰 방지) -->
+	<select id="checkReviewHistory" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM PRODUCTS_COMMENTS pc
+	    WHERE pc.PROR_ITEM_ID = #{pror_item_id}  
+	    AND pc.US_ID = #{us_id}  
+	    AND pc.PRC_STATUS = 'Y'
+	</select>
+	
+	<!-- 구매 정보 조회 수정 -->
+	<select id="getPurchaseInfo" resultType="product">
+	    SELECT 
+	        i.*, 
+	        o.US_ID, 
+	        o.PROR_STATUS,
+	        o.PROR_DELI_STAT,
+	        o.PROR_MASTER_ID,
+	        po.PR_OPT_ID, 
+	        po.PR_OPT_NAME,
+	        i.PROR_ITEM_ID,
+	        o.PROR_DATE,
+	        DATE_FORMAT(DATE_ADD(STR_TO_DATE(o.PROR_DATE, '%Y/%m/%d'), INTERVAL 31 DAY), '%Y/%m/%d') as prc_review_deadline
+	    FROM PRODUCTS_ORDERS o
+	    JOIN PRODUCTS_ORDERS_ITEMS i ON o.PROR_MASTER_ID = i.PROR_MASTER_ID
+	    JOIN PRODUCT_OPTIONS po ON i.PR_ID = po.PR_ID AND i.PR_OPT_NAME = po.PR_OPT_NAME
+	    WHERE o.US_ID = #{us_id}
+	    AND i.PR_ID = #{pr_id}
+	    AND o.PROR_STATUS = 'paid'
+	    AND o.PROR_DELI_STAT = 'delivered'
+	    AND <![CDATA[ STR_TO_DATE(o.PROR_DATE, '%Y/%m/%d') >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) ]]>
+	    AND o.PROR_MASTER_ID NOT IN (
+	        SELECT DISTINCT pc.PROR_MASTER_ID
+	        FROM PRODUCTS_COMMENTS pc
+	        WHERE pc.US_ID = #{us_id}
+	        AND pc.PR_ID = #{pr_id}
+	        AND pc.PRC_STATUS = 'Y'
+	    )
+	    ORDER BY o.PROR_DATE DESC
+	    LIMIT 1
+	</select>
+	
+	<select id="getOrderListCount" resultType="int">
+	    SELECT COUNT(DISTINCT o.PROR_MASTER_ID)
+	    FROM PRODUCTS_ORDERS o
+	    WHERE o.US_ID = #{us_id}
+	    AND DATE(o.PROR_DATE) BETWEEN #{startDate} AND #{endDate}
+	</select>
+	
+	<!-- 주문 상품 목록 조회 쿼리 수정 -->
+	<select id="getOrderItems" resultType="product">
+	    SELECT 
+	        i.*,
+	        p.PR_THUMBNAIL,
+	        p.PR_NAME,
+	        p.PR_CATEGORY,
+	        i.PR_OPT_NAME,
+	        i.PROR_ITEM_QTT,
+	        i.PROR_ITEM_AMT
+	    FROM PRODUCTS_ORDERS_ITEMS i
+	    LEFT JOIN PRODUCTS p ON i.PR_ID = p.PR_ID
+	    WHERE i.PROR_MASTER_ID = #{pror_master_id}
+	    ORDER BY i.PROR_ITEM_ID
+	</select>
+    
+	<update id="updateProductStock">
+	    UPDATE PRODUCT_OPTIONS 
+	    SET PR_OPT_STOCK = PR_OPT_STOCK - #{pror_item_qtt},
+	        PR_OPT_STATUS = (
+	            SELECT CASE 
+	                WHEN (PR_OPT_STOCK - #{pror_item_qtt}) &lt;= 0 
+	                THEN 'out_of_stock' 
+	                ELSE 'available' 
+	            END
+	        )
+	    WHERE PR_ID = #{pr_id} 
+	    AND PR_OPT_NAME = #{pr_opt_name}
+	</update>
+	
+	<update id="updateProductStatus">
+	    UPDATE PRODUCTS p
+	    SET p.PR_STATUS = (
+	        SELECT CASE 
+	            WHEN NOT EXISTS (
+	                SELECT 1 
+	                FROM PRODUCT_OPTIONS po 
+	                WHERE po.PR_ID = p.PR_ID 
+	                AND po.PR_OPT_STOCK &gt; 0
+	            ) 
+	            THEN 'out_of_stock' 
+	            ELSE 'available' 
+	        END
+	    )
+	    WHERE p.PR_ID = #{pr_id}
+	</update>
+	
+	<select id="getProductStock" resultType="int">
+	    SELECT PR_OPT_STOCK 
+	    FROM PRODUCT_OPTIONS 
+	    WHERE PR_ID = #{pr_id} AND PR_OPT_NAME = #{pr_opt_name}
+	</select>
+	
+	<select id="getExistingReview" resultType="product">
+	    SELECT * 
+	    FROM PRODUCTS_COMMENTS 
+	    WHERE US_ID = #{us_id} 
+	    AND PR_ID = #{pr_id} 
+	    AND PRC_STATUS = 'Y'
+	</select>
+	
+	<!-- 위시리스트 추가 -->
+	<insert id="addToWishlist">
+	    INSERT INTO PRODUCTS_WISHLIST 
+	    (US_ID, PR_ID, PR_NAME, PR_THUMBNAIL, PR_OPT_NAME, PR_OPT_PRICE, PRWL_DATE)
+	    SELECT 
+	        #{us_id}, 
+	        p.PR_ID, 
+	        p.PR_NAME, 
+	        p.PR_THUMBNAIL,
+	        (SELECT PR_OPT_NAME FROM PRODUCT_OPTIONS WHERE PR_ID = p.PR_ID ORDER BY PR_OPT_ID ASC LIMIT 1) as PR_OPT_NAME,
+	        (SELECT PR_OPT_PRICE FROM PRODUCT_OPTIONS WHERE PR_ID = p.PR_ID ORDER BY PR_OPT_ID ASC LIMIT 1) as PR_OPT_PRICE,
+	        #{prwl_date}
+	    FROM PRODUCTS p
+	    WHERE p.PR_ID = #{pr_id}
+	</insert>
+	
+	<!-- 위시리스트 삭제 -->
+	<delete id="removeFromWishlist">
+	    DELETE FROM PRODUCTS_WISHLIST 
+	    WHERE PRWL_NO = #{prwl_no} AND US_ID = #{us_id}
+	</delete>
+	
+	<!-- 위시리스트 중복 체크 -->
+	<select id="checkWishlistDuplicate" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM PRODUCTS_WISHLIST 
+	    WHERE US_ID = #{us_id} 
+	    AND PR_ID = #{pr_id}
+	</select>
+	
+	<!-- 위시리스트 조회 -->
+	<select id="getWishlist" resultType="product">
+	    SELECT * FROM PRODUCTS_WISHLIST 
+	    WHERE US_ID = #{us_id}
+	    ORDER BY PRWL_NO DESC
+	</select>
+	
+	<!-- 위시리스트 카운트 조회 -->
+	<select id="getWishlistCount" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM PRODUCTS_WISHLIST 
+	    WHERE US_ID = #{us_id}
+	</select>
+	
+	<select id="checkReviewExists" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM PRODUCTS_COMMENTS
+	    WHERE PROR_ITEM_ID = #{pror_item_id}  <!-- pr_id 대신 pror_item_id로 체크 -->
+	    AND PRC_STATUS = 'Y'
+	</select>
+	
+	<select id="getUserEmail" resultType="string">
+	    SELECT US_EMAIL 
+	    FROM USERS 
+	    WHERE US_ID = #{us_id}
+	</select>
+	
+	<!-- merchant_uid로 주문 조회 -->
+	<select id="getOrderByMerchantUid" resultType="product">
+	    SELECT 
+	        o.*,
+	        u.US_EMAIL,
+	        o.MERCHANT_UID,
+	        o.IMP_UID 
+	    FROM PRODUCTS_ORDERS o
+	    JOIN USERS u ON o.US_ID = u.US_ID
+	    WHERE o.MERCHANT_UID = #{merchant_uid}
+	    LIMIT 1
+	</select>
+	
+	<!-- 작성된 리뷰 수 조회 -->
+	<select id="getReviewCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM PRODUCTS_COMMENTS
+	    WHERE US_ID = #{us_id}
+	    AND PR_ID = #{pr_id}
+	    AND PRC_STATUS = 'Y'
+	</select>
+	
+	<!-- 배송완료된 주문건수 조회 -->
+	<select id="getDeliveredOrderCount" resultType="int">
+	    SELECT COUNT(DISTINCT i.PROR_ITEM_ID)
+	    FROM PRODUCTS_ORDERS o
+	    JOIN PRODUCTS_ORDERS_ITEMS i ON o.PROR_MASTER_ID = i.PROR_MASTER_ID
+	    WHERE o.US_ID = #{us_id}
+	    AND i.PR_ID = #{pr_id}
+	    AND o.PROR_STATUS = 'paid'
+	    AND o.PROR_DELI_STAT = 'delivered'
+	    AND <![CDATA[ 
+	        STR_TO_DATE(o.PROR_DATE, '%Y/%m/%d') >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+	    ]]>
+	</select>
+	
+	<select id="getProductReviewCount" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM PRODUCTS_COMMENTS pc
+	    WHERE pc.PR_ID = #{pr_id}
+	    AND pc.PRC_STATUS = 'Y'
+	</select>
+	
+	<update id="deactivateExistingReview" parameterType="product">
+	    UPDATE PRODUCTS_COMMENTS 
+	    SET PRC_STATUS = 'N'
+	    WHERE PROR_ITEM_ID = #{pror_item_id}
+	    AND PRC_STATUS = 'Y'
+	</update>
+	
+	<!-- 기존 리뷰 삭제 -->
+	<delete id="deleteExistingReview" parameterType="product">
+	    DELETE FROM PRODUCTS_COMMENTS 
+	    WHERE PROR_ITEM_ID = #{pror_item_id}
+	    AND US_ID = #{us_id}
+	</delete>
+	
+	<select id="getCartItem" resultType="product">
+	    SELECT * FROM PRODUCTS_SHOPPING_CARTS 
+	    WHERE US_ID = #{us_id} 
+	    AND PR_ID = #{pr_id} 
+	    AND PR_OPT_NAME = #{pr_opt_name}
+	</select>
+	
+	<select id="productIndex" resultType="product">
+		SELECT * FROM PRODUCTS LIMIT 0, 5
+	</select>
+
+	<!-- 관리자용 리뷰 목록 조회 -->
+	<select id="getAdminProductReview" resultType="product">
+	    SELECT pc.*, 
+	           p.PR_NAME,
+	           o.US_ID
+	    FROM PRODUCTS_COMMENTS pc
+	    JOIN PRODUCTS_ORDERS_ITEMS i ON pc.PROR_ITEM_ID = i.PROR_ITEM_ID
+	    JOIN PRODUCTS_ORDERS o ON i.PROR_MASTER_ID = o.PROR_MASTER_ID
+	    JOIN PRODUCTS p ON pc.PR_ID = p.PR_ID
+	    WHERE pc.PRC_STATUS = 'Y'
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND (p.PR_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+	        OR o.US_ID LIKE CONCAT('%', #{searchKeyword}, '%'))
+	    </if>
+	    ORDER BY pc.PRC_NO DESC
+	    LIMIT #{rowFirst}, #{rowSizePerPage}
+	</select>
+	
+	<!-- 관리자용 문의 목록 조회 -->
+	<select id="getAdminProductQuestion" resultType="product">
+	    SELECT DISTINCT q.*, p.PR_NAME, u.US_ID
+	    FROM PRODUCTS_QNA q
+	    LEFT JOIN PRODUCTS p ON q.PR_ID = p.PR_ID
+	    LEFT JOIN USERS u ON q.US_ID = u.US_ID
+	    WHERE q.PRQ_STATUS = 'Y'
+	    AND q.PRQ_COMMENTS IS NULL  <!-- 원본 문의글만 가져오기 -->
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND (p.PR_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+	        OR u.US_ID LIKE CONCAT('%', #{searchKeyword}, '%'))
+	    </if>
+	    ORDER BY q.PRQ_NO DESC
+	    LIMIT #{rowFirst}, #{rowSizePerPage}
+	</select>
+	
+	<!-- 관리자용 주문 목록 조회 -->
+	<select id="getAdminProductOrderList" resultType="product">
+	    SELECT 
+	        o.*,
+	        u.US_ID,
+	        u.US_EMAIL,
+	        CONCAT(
+	            (SELECT p.PR_NAME 
+	             FROM PRODUCTS_ORDERS_ITEMS i 
+	             JOIN PRODUCTS p ON i.PR_ID = p.PR_ID 
+	             WHERE i.PROR_MASTER_ID = o.PROR_MASTER_ID 
+	             LIMIT 1),
+	            CASE 
+	                WHEN (SELECT COUNT(*) 
+	                      FROM PRODUCTS_ORDERS_ITEMS 
+	                      WHERE PROR_MASTER_ID = o.PROR_MASTER_ID) > 1 
+	                THEN CONCAT(' 외 ', 
+	                    (SELECT COUNT(*)-1 
+	                     FROM PRODUCTS_ORDERS_ITEMS 
+	                     WHERE PROR_MASTER_ID = o.PROR_MASTER_ID),
+	                    '건')
+	                ELSE ''
+	            END
+	        ) as pr_name
+	    FROM PRODUCTS_ORDERS o
+	    JOIN USERS u ON o.US_ID = u.US_ID
+	    WHERE 1=1
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND (CAST(o.PROR_MASTER_ID AS CHAR) LIKE CONCAT('%', #{searchKeyword}, '%')
+	        OR u.US_ID LIKE CONCAT('%', #{searchKeyword}, '%'))
+	    </if>
+	    ORDER BY o.PROR_MASTER_ID DESC
+	    LIMIT #{rowFirst}, #{rowSizePerPage}
+	</select>
+	
+	<!-- 배송 상태 업데이트 -->
+	<update id="updateOrderDeliveryStatus">
+	    UPDATE PRODUCTS_ORDERS 
+	    SET PROR_DELI_STAT = #{pror_deli_stat}
+	    WHERE PROR_MASTER_ID = #{pror_master_id}
+	</update>
+	
+	<!-- 배송상태 이력 저장 -->
+	<insert id="insertDeliveryStatusHistory">
+	    INSERT INTO DELIVERY_STATUS_HISTORY (
+	        PROR_MASTER_ID, 
+	        OLD_STATUS,
+	        NEW_STATUS,
+	        STATUS_DATE,
+	        UPDATE_BY
+	    ) VALUES (
+	        #{pror_master_id},
+	        #{old_status},
+	        #{new_status},
+	        #{status_date},
+	        #{us_id}
+	    )
+	</insert>
+	
+	<!-- 리뷰 총 개수 조회 -->
+	<select id="getProductReviewTotalCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM PRODUCTS_COMMENTS pc
+	    JOIN PRODUCTS_ORDERS_ITEMS i ON pc.PROR_ITEM_ID = i.PROR_ITEM_ID
+	    JOIN PRODUCTS_ORDERS o ON i.PROR_MASTER_ID = o.PROR_MASTER_ID
+	    JOIN PRODUCTS p ON pc.PR_ID = p.PR_ID
+	    WHERE pc.PRC_STATUS = 'Y'
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND (p.PR_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+	        OR o.US_ID LIKE CONCAT('%', #{searchKeyword}, '%'))
+	    </if>
+	</select>
+	
+	<!-- 주문 총 개수 조회 -->
+	<select id="getAdminOrderListCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM PRODUCTS_ORDERS o
+	    JOIN USERS u ON o.US_ID = u.US_ID
+	    WHERE 1=1
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND (o.PROR_MASTER_ID LIKE CONCAT('%', #{searchKeyword}, '%')
+	        OR u.US_ID LIKE CONCAT('%', #{searchKeyword}, '%'))
+	    </if>
+	</select>
+	
+	<!-- 답변 완료된 문의 개수 조회 -->
+	<select id="getAnsweredQuestionCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM PRODUCTS_QNA
+	    WHERE PR_ID = #{pr_id}
+	    AND PRQ_STATUS = 'Y'
+	    AND PRQ_COMMENTS IS NOT NULL
+	</select>
+	
+	<!-- 결제상태별 주문 통계 -->
+	<select id="getPaymentStatusStats" resultType="map">
+	    SELECT 
+	        PROR_STATUS as status,
+	        COUNT(*) as count,
+	        SUM(PROR_TOTAL_AMT) as total_amount
+	    FROM PRODUCTS_ORDERS
+	    GROUP BY PROR_STATUS
+	</select>
+	
+	<!-- 배송상태별 주문 통계 -->
+	<select id="getDeliveryStatusStats" resultType="map">
+	    SELECT 
+	        PROR_DELI_STAT as status,
+	        COUNT(*) as count
+	    FROM PRODUCTS_ORDERS
+	    WHERE PROR_STATUS = 'paid'
+	    GROUP BY PROR_DELI_STAT
+	</select>
+	
+	<!-- 오늘의 주문/취소 현황 -->
+	<select id="getTodayOrderStats" resultType="map">
+	    SELECT 
+	        COUNT(CASE WHEN PROR_STATUS = 'paid' THEN 1 END) as order_count,
+	        COUNT(CASE WHEN PROR_STATUS = 'cancelled' THEN 1 END) as cancel_count,
+	        SUM(CASE WHEN PROR_STATUS = 'paid' THEN PROR_TOTAL_AMT ELSE 0 END) as total_sales
+	    FROM PRODUCTS_ORDERS
+	    WHERE DATE(STR_TO_DATE(PROR_DATE, '%Y/%m/%d')) = CURDATE()
+	</select>
+	
+	<!-- 기간별 매출 통계 -->
+	<select id="getSalesStatsByPeriod" resultType="map">
+	    SELECT 
+	        DATE(STR_TO_DATE(PROR_DATE, '%Y/%m/%d')) as order_date,
+	        COUNT(*) as order_count,
+	        SUM(PROR_TOTAL_AMT) as daily_sales
+	    FROM PRODUCTS_ORDERS
+	    WHERE PROR_STATUS = 'paid'
+	    AND DATE(STR_TO_DATE(PROR_DATE, '%Y/%m/%d')) BETWEEN #{startDate} AND #{endDate}
+	    GROUP BY DATE(STR_TO_DATE(PROR_DATE, '%Y/%m/%d'))
+	    ORDER BY order_date
+	</select>
+	
+	<update id="updateQuestionAnswer">
+	    UPDATE PRODUCTS_QNA 
+	    SET PRQ_COMMENTS = #{prq_comments},
+	        PRQ_DATE = #{prq_date}
+	    WHERE PRQ_NO = #{prq_no}
+	</update>
+	
+	<!-- 문의 총 개수 조회 -->
+	<select id="getProductQuestionTotalCount" resultType="int">
+	    SELECT COUNT(DISTINCT q.PRQ_NO)
+	    FROM PRODUCTS_QNA q
+	    LEFT JOIN PRODUCTS p ON q.PR_ID = p.PR_ID
+	    LEFT JOIN USERS u ON q.US_ID = u.US_ID
+	    WHERE q.PRQ_STATUS = 'Y'
+	    AND q.PRQ_COMMENTS IS NULL  <!-- 원본 문의글만 카운트 -->
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND (p.PR_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+	        OR u.US_ID LIKE CONCAT('%', #{searchKeyword}, '%'))
+	    </if>
+	</select>
+	
+	<!-- 결제 취소후 수량 증가 -->
+	<update id="updateCancelled">
+		UPDATE product_options po1
+		JOIN (
+			SELECT pr_id, pr_opt_name, pror_item_qtt 
+			FROM products_orders_items 
+			WHERE pror_master_id = (
+				SELECT pror_master_id 
+		 		FROM products_orders 
+		 		WHERE merchant_uid = #{merchant_uid}
+			)
+		) po2 ON po1.pr_id = po2.pr_id
+				AND po1.pr_opt_name = po2.pr_opt_name
+		SET po1.pr_opt_stock = po1.pr_opt_stock + po2.pror_item_qtt;
+	</update>
+	
+</mapper>
